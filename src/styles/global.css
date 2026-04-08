@@ -818,3 +818,56 @@ animation: revealSubtitle 1s forwards;
   font-family: monospace;
   font-size: 0.9em;
 }
+
+/* Dropdown toggle via click */
+.dropdown.open .dropdown-menu {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+
+.dropdown.open .dropdown-icon {
+  transform: rotate(180deg);
+}
+
+/* Mobile: disable hover, use click only */
+@media (hover: none) {
+  .dropdown:hover .dropdown-menu {
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+  .dropdown.open .dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    left: auto;
+    right: 0;
+  }
+}
+
+/* Mobile header: hide page links, only show More Research + MLL Lab */
+@media (max-width: 768px) {
+  .nav-page {
+    display: none !important;
+  }
+  header .badge-icon {
+    height: 20px;
+  }
+  header .info-badge {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+  header .main-nav a {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.35rem;
+  }
+  header .dropdown-menu {
+    min-width: 140px;
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+  header .dropdown:hover .dropdown-menu {
+    transform: translateY(0);
+  }
+}
