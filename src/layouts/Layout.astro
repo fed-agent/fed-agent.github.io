@@ -10,12 +10,27 @@ const { title } = Astro.props;
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="description" content="FedAgent: Federated Agent Reinforcement Learning - Enabling collaborative learning of AI agents across distributed clients without sharing local data." />
+        <meta name="description" content="FedAgent: Federated Agent Reinforcement Learning. A decentralized training paradigm enabling collaborative learning of LLM-powered AI agents across distributed clients without sharing local data." />
+        <meta name="keywords" content="federated learning, reinforcement learning, AI agents, LLM, privacy-preserving machine learning, decentralized training, GRPO, FedAgentGym" />
+        <meta name="author" content="Canyu Chen, Kangyu Zhu, Zhaorun Chen, Zhanhui Zhou, Shizhe Diao, Yiping Lu, Tian Li, Manling Li, Dawn Song" />
         <meta name="viewport" content="width=device-width" />
+        <meta name="theme-color" content="#2a2f6c" />
         <link rel="icon" type="image/png" href="/icon.png" />
         <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="canonical" href="https://fed-agent.github.io/" />
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
+        <!-- Open Graph -->
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="FedAgent: Federated Agent Reinforcement Learning" />
+        <meta property="og:description" content="A decentralized training paradigm enabling collaborative learning of LLM-powered AI agents across distributed clients without sharing local data." />
+        <meta property="og:image" content="https://fed-agent.github.io/figures/fedagent_figure.png" />
+        <meta property="og:url" content="https://fed-agent.github.io/" />
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="FedAgent: Federated Agent Reinforcement Learning" />
+        <meta name="twitter:description" content="A decentralized training paradigm enabling collaborative learning of LLM-powered AI agents across distributed clients without sharing local data." />
+        <meta name="twitter:image" content="https://fed-agent.github.io/figures/fedagent_figure.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,6 +39,34 @@ const { title } = Astro.props;
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
           onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+        <!-- Structured Data -->
+        <script type="application/ld+json" is:inline>
+        {
+          "@context": "https://schema.org",
+          "@type": "ScholarlyArticle",
+          "headline": "FedAgent: Federated Agent Reinforcement Learning",
+          "description": "A decentralized training paradigm enabling collaborative learning of LLM-powered AI agents across distributed clients without sharing local data.",
+          "image": "https://fed-agent.github.io/figures/fedagent_figure.png",
+          "url": "https://fed-agent.github.io/",
+          "datePublished": "2025",
+          "author": [
+            {"@type": "Person", "name": "Canyu Chen", "url": "https://canyuchen.com/"},
+            {"@type": "Person", "name": "Kangyu Zhu"},
+            {"@type": "Person", "name": "Zhaorun Chen", "url": "https://billchan226.github.io/"},
+            {"@type": "Person", "name": "Zhanhui Zhou"},
+            {"@type": "Person", "name": "Shizhe Diao", "url": "https://shizhediao.github.io/"},
+            {"@type": "Person", "name": "Yiping Lu", "url": "https://2prime.github.io/"},
+            {"@type": "Person", "name": "Tian Li", "url": "https://litian96.github.io/"},
+            {"@type": "Person", "name": "Manling Li", "url": "https://limanling.github.io/"},
+            {"@type": "Person", "name": "Dawn Song", "url": "https://dawnsong.io/"}
+          ],
+          "publisher": {
+            "@type": "Organization",
+            "name": "MLL Lab, Northwestern University",
+            "url": "https://www.mll.lab.northwestern.edu/"
+          }
+        }
+        </script>
     </head>
     <body>
         <Header />

@@ -1,5 +1,5 @@
 {
-  "name": "ragen_web",
+  "name": "fedagent-web",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
