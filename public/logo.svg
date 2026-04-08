@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Outer client nodes -->
+  <circle cx="60" cy="16" r="10" fill="#4a6fa5" opacity="0.85"/>
+  <circle cx="101" cy="40" r="10" fill="#4a6fa5" opacity="0.85"/>
+  <circle cx="101" cy="84" r="10" fill="#4a6fa5" opacity="0.85"/>
+  <circle cx="60" cy="108" r="10" fill="#4a6fa5" opacity="0.85"/>
+  <circle cx="19" cy="84" r="10" fill="#4a6fa5" opacity="0.85"/>
+  <circle cx="19" cy="40" r="10" fill="#4a6fa5" opacity="0.85"/>
+
+  <!-- Connection lines to center -->
+  <line x1="60" y1="16" x2="60" y2="60" stroke="#4a6fa5" stroke-width="2" opacity="0.35"/>
+  <line x1="101" y1="40" x2="60" y2="60" stroke="#4a6fa5" stroke-width="2" opacity="0.35"/>
+  <line x1="101" y1="84" x2="60" y2="60" stroke="#4a6fa5" stroke-width="2" opacity="0.35"/>
+  <line x1="60" y1="108" x2="60" y2="60" stroke="#4a6fa5" stroke-width="2" opacity="0.35"/>
+  <line x1="19" y1="84" x2="60" y2="60" stroke="#4a6fa5" stroke-width="2" opacity="0.35"/>
+  <line x1="19" y1="40" x2="60" y2="60" stroke="#4a6fa5" stroke-width="2" opacity="0.35"/>
+
+  <!-- Curved arrows (data flow) from clients to center -->
+  <path d="M54,22 Q48,38 56,52" fill="none" stroke="#2a2f6c" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <path d="M94,44 Q80,46 66,56" fill="none" stroke="#2a2f6c" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <path d="M94,80 Q82,74 66,66" fill="none" stroke="#2a2f6c" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <path d="M54,102 Q48,86 56,70" fill="none" stroke="#2a2f6c" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <path d="M26,80 Q38,74 54,66" fill="none" stroke="#2a2f6c" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <path d="M26,44 Q38,46 54,56" fill="none" stroke="#2a2f6c" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2a2f6c"/>
+    </marker>
+  </defs>
+
+  <!-- Central server node -->
+  <circle cx="60" cy="60" r="16" fill="#2a2f6c"/>
+  <!-- Brain/network pattern inside central node -->
+  <circle cx="54" cy="56" r="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="66" cy="56" r="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="60" cy="67" r="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+  <line x1="56" y1="58" x2="64" y2="54" stroke="#fff" stroke-width="1.2"/>
+  <line x1="56" y1="58" x2="58" y2="65" stroke="#fff" stroke-width="1.2"/>
+  <line x1="64" y1="58" x2="62" y2="65" stroke="#fff" stroke-width="1.2"/>
+
+  <!-- Small person icons in client nodes -->
+  <!-- Top -->
+  <circle cx="60" cy="13" r="2.5" fill="#fff"/>
+  <path d="M55.5,20 Q60,17 64.5,20" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Top right -->
+  <circle cx="101" cy="37" r="2.5" fill="#fff"/>
+  <path d="M96.5,44 Q101,41 105.5,44" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Bottom right -->
+  <circle cx="101" cy="81" r="2.5" fill="#fff"/>
+  <path d="M96.5,88 Q101,85 105.5,88" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Bottom -->
+  <circle cx="60" cy="105" r="2.5" fill="#fff"/>
+  <path d="M55.5,112 Q60,109 64.5,112" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Bottom left -->
+  <circle cx="19" cy="81" r="2.5" fill="#fff"/>
+  <path d="M14.5,88 Q19,85 23.5,88" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Top left -->
+  <circle cx="19" cy="37" r="2.5" fill="#fff"/>
+  <path d="M14.5,44 Q19,41 23.5,44" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

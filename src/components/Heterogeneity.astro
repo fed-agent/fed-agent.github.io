@@ -1,0 +1,164 @@
+---
+// Heterogeneity.astro - Client distributions under different partitioning strategies (Appendix C)
+---
+
+<section id="heterogeneity" class="content-section">
+  <div class="section-container">
+    <h2 class="section-title">Client Distributions under Partitioning Strategies</h2>
+    <p class="section-description">
+      We visualize the client distributions under our three partitioning strategies across both WebShop and ALFWorld benchmarks.
+    </p>
+
+    <!-- Preference Heterogeneity -->
+    <div class="hetero-block">
+      <h3 class="hetero-title">
+        <span class="hetero-badge preference-badge">Preference</span>
+        Preference Heterogeneity
+      </h3>
+      <p class="hetero-description">
+        Each client draws items from a client-specific categorical distribution over task types, controlled by jitter parameter <em>&omega;</em>. A larger <em>&omega;</em> produces more skewed per-client category mixes, modeling scenarios where different users strongly prefer distinct types of tasks.
+      </p>
+      <div class="figure-row">
+        <div class="figure-item">
+          <img src="/figures/webshop_category_comparison_side_by_side.png" alt="WebShop Preference Heterogeneity" class="hetero-figure" />
+          <p class="figure-caption">WebShop (&omega; = 0.1 vs. &omega; = 0.9)</p>
+        </div>
+        <div class="figure-item">
+          <img src="/figures/alfworld_category_comparison_side_by_side.png" alt="ALFWorld Preference Heterogeneity" class="hetero-figure" />
+          <p class="figure-caption">ALFWorld (&omega; = 0.1 vs. &omega; = 0.9)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coverage Heterogeneity -->
+    <div class="hetero-block">
+      <h3 class="hetero-title">
+        <span class="hetero-badge coverage-badge">Coverage</span>
+        Coverage Heterogeneity
+      </h3>
+      <p class="hetero-description">
+        Each client receives a different number of task instructions, controlled by dispersion parameter <em>&xi;</em>. A smaller <em>&xi;</em> leads to higher variance in client dataset sizes, modeling scenarios where some users have extensive task collections while others have very few.
+      </p>
+      <div class="figure-row">
+        <div class="figure-item">
+          <img src="/figures/webshop_coverage_comparison_side_by_side.png" alt="WebShop Coverage Heterogeneity" class="hetero-figure" />
+          <p class="figure-caption">WebShop (&xi; = 1 vs. &xi; = 256)</p>
+        </div>
+        <div class="figure-item">
+          <img src="/figures/alfworld_coverage_comparison_side_by_side.png" alt="ALFWorld Coverage Heterogeneity" class="hetero-figure" />
+          <p class="figure-caption">ALFWorld (&xi; = 1 vs. &xi; = 256)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hardness Heterogeneity -->
+    <div class="hetero-block">
+      <h3 class="hetero-title">
+        <span class="hetero-badge hardness-badge">Hardness</span>
+        Hardness Heterogeneity
+      </h3>
+      <p class="hetero-description">
+        Each client receives a different mix of easy (previously successful) and hard (previously unsuccessful) tasks, controlled by parameter <em>&xi;'</em>. A smaller <em>&xi;'</em> leads to higher variance in difficulty levels across clients, modeling scenarios where some users face predominantly easy tasks while others encounter mostly hard tasks.
+      </p>
+      <div class="figure-row">
+        <div class="figure-item">
+          <img src="/figures/webshop_hardiness_comparison_side_by_side.png" alt="WebShop Hardness Heterogeneity" class="hetero-figure" />
+          <p class="figure-caption">WebShop (&xi;' = 1 vs. &xi;' = 256)</p>
+        </div>
+        <div class="figure-item">
+          <img src="/figures/alfworld_hardiness_comparison_side_by_side.png" alt="ALFWorld Hardness Heterogeneity" class="hetero-figure" />
+          <p class="figure-caption">ALFWorld (&xi;' = 1 vs. &xi;' = 256)</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .hetero-block {
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+  }
+
+  .hetero-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2a2f6c;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hetero-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: white;
+  }
+
+  .preference-badge { background: linear-gradient(135deg, #e07c5a, #d06a48); }
+  .coverage-badge { background: linear-gradient(135deg, #5a8de0, #4a7dd0); }
+  .hardness-badge { background: linear-gradient(135deg, #8b5ae0, #7a4ad0); }
+
+  .hetero-description {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    max-width: 850px;
+  }
+
+  .hetero-description em {
+    color: #2a2f6c;
+    font-style: italic;
+  }
+
+  .figure-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .figure-item {
+    text-align: center;
+  }
+
+  .hetero-figure {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .figure-caption {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  @media (max-width: 768px) {
+    .hetero-block {
+      padding: 1.25rem;
+    }
+
+    .figure-row {
+      grid-template-columns: 1fr;
+    }
+
+    .hetero-title {
+      font-size: 1.1rem;
+      flex-wrap: wrap;
+    }
+  }
+</style>

@@ -1,0 +1,247 @@
+---
+// PseudoCode.astro - FedAgent algorithm pseudocode (KaTeX rendered)
+
+// All LaTeX strings defined here to avoid Astro parsing {} as JSX
+const lines = {
+  req1: String.raw`<strong>Require:</strong> Total clients $K$, rounds $T$, clients-per-round $M$, local steps $\tau$, learning rate $\eta$`,
+  req2: String.raw`<strong>Ensure:</strong> Final LLM-based global policy parameters $\theta_{\mathrm{final}}$`,
+  l1: String.raw`1: Initialize global policy parameters $\theta_{0}$ (an LLM)`,
+  l2: String.raw`2: <strong>for</strong> $t = 0$ <strong>to</strong> $T{-}1$ <strong>do</strong>`,
+  l3: String.raw`3: &nbsp;&nbsp;<span class="server-color"><strong>Server:</strong></span> sample client subset $S_t \subset [K]$ with $|S_t|=M$ (uniform without replacement)`,
+  l4: String.raw`4: &nbsp;&nbsp;<span class="server-color"><strong>Server:</strong></span> broadcast $\theta_t$ to all $k \in S_t$`,
+  l5: String.raw`5: &nbsp;&nbsp;<strong>for each</strong> $k \in S_t$ <strong>in parallel do</strong>`,
+  l6: String.raw`6: &nbsp;&nbsp;&nbsp;&nbsp;Set local iterate $\theta_{k,t,0} \gets \theta_t$`,
+  l7: String.raw`7: &nbsp;&nbsp;&nbsp;&nbsp;<strong>for</strong> $i = 0$ <strong>to</strong> $\tau{-}1$ <strong>do</strong>`,
+  l8: String.raw`8: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Collect mini-batch of trajectories $B_{k,t,i}$ using policy $\pi_{\theta_{k,t,i}}$ in env $\mathcal{M}_k$`,
+  l9: String.raw`9: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate policy gradient: $g_{k,t,i} \gets \nabla_{\theta} \hat{J}_k(\theta_{k,t,i};\, B_{k,t,i})$ <span class="algo-comment">(e.g., GRPO)</span>`,
+  l10: String.raw`10: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Local update: $\theta_{k,t,i+1} \gets \theta_{k,t,i} + \eta\, g_{k,t,i}$`,
+  l12: String.raw`12: &nbsp;&nbsp;&nbsp;&nbsp;Client returns local model $\theta_{k,t,\tau}$ <span class="algo-comment">(equivalently $\Delta\theta_{k,t}=\theta_{k,t,\tau}-\theta_t$)</span>`,
+  l14: String.raw`14: &nbsp;&nbsp;<span class="server-color"><strong>Server:</strong></span> Aggregation via model averaging:`,
+  agg: String.raw`$$\theta_{t+1} \gets \frac{1}{M}\sum_{k \in S_t} \theta_{k,t,\tau}$$`,
+  l16: String.raw`16: <strong>return</strong> $\theta_{\mathrm{final}} \gets \theta_T$`,
+  // Partitioning algorithms
+  pref_req: String.raw`<strong>Require:</strong> Category pools $\{\mathcal{I}_c\}$ with sizes $n_c$; clients $K$; per-client size $L$; jitter $\omega$`,
+  pref1: String.raw`1: Compute global mix $p_c \gets n_c / \textstyle\sum n_j$ and logit anchors $\ell_c$`,
+  pref2: String.raw`2: <strong>for</strong> $k = 1$ <strong>to</strong> $K$ <strong>do</strong>`,
+  pref3: String.raw`3: &nbsp;&nbsp;Sample $z_c \sim \mathcal{N}(\ell_c, \omega^2)$, softmax to get $q_c$ <span class="algo-comment">(larger $\omega$ $\Rightarrow$ higher variance)</span>`,
+  pref4: String.raw`4: &nbsp;&nbsp;Draw category counts via $\mathrm{Multinomial}(L;\, q)$`,
+  cov_req: String.raw`<strong>Require:</strong> Items $N$; clients $K$; bounds $(L_{\min}, L_{\mathrm{avg}}, L_{\max})$; dispersion $\xi$; overlap $r$`,
+  cov1: String.raw`1: Compute total assignments $T = \lfloor rN \rfloor$`,
+  cov2: String.raw`2: Sample sizes from $\mathrm{Beta}(\alpha, \beta)$ <span class="algo-comment">(larger $\xi$ $\Rightarrow$ lower variance)</span>`,
+  cov5: String.raw`5: &nbsp;&nbsp;Place item into clients with $\Pr(k) \propto \mathrm{rem}_k$`,
+  hard_req: String.raw`<strong>Require:</strong> Items $N$; sets $\mathcal{S}$ (success), $\mathcal{U}$ (fail); clients $K$; size $L$; dispersion $\xi'$`,
+  hard1: String.raw`1: Partition $\mathcal{S}$ via CoveragePartition <span class="algo-comment">(larger $\xi'$ $\Rightarrow$ lower variance)</span>`,
+  hard2: String.raw`2: <strong>for</strong> $k = 1$ <strong>to</strong> $K$ <strong>do</strong>`,
+  hard3: String.raw`3: &nbsp;&nbsp;Fill remaining slots with items from $\mathcal{U}$`,
+  hard4: String.raw`4: &nbsp;&nbsp;$X_k \gets Y_k \cup F_k$`,
+};
+---
+
+<section id="algorithm" class="content-section alt-background">
+  <div class="section-container">
+    <h2 class="section-title">Algorithm</h2>
+
+    <!-- Main Algorithm -->
+    <div class="algorithm-block">
+      <div class="algorithm-header">Algorithm 1: FedAgent with <span class="client-color">Client</span> and <span class="server-color">Server</span> Training</div>
+      <div class="algorithm-body">
+        <div class="algo-line requirement" set:html={lines.req1} />
+        <div class="algo-line requirement" set:html={lines.req2} />
+        <div class="algo-line" set:html={lines.l1} />
+        <div class="algo-line" set:html={lines.l2} />
+        <div class="algo-line indent-1 server-block" set:html={lines.l3} />
+        <div class="algo-line indent-1 server-block" set:html={lines.l4} />
+        <div class="algo-group client-group">
+          <div class="algo-line indent-1" set:html={lines.l5} />
+          <div class="algo-line indent-2" set:html={lines.l6} />
+          <div class="algo-line indent-2" set:html={lines.l7} />
+          <div class="algo-line indent-3" set:html={lines.l8} />
+          <div class="algo-line indent-3" set:html={lines.l9} />
+          <div class="algo-line indent-3" set:html={lines.l10} />
+          <div class="algo-line indent-2">11: &nbsp;&nbsp;&nbsp;&nbsp;<strong>end for</strong></div>
+          <div class="algo-line indent-2" set:html={lines.l12} />
+          <div class="algo-line indent-1">13: &nbsp;&nbsp;<strong>end for</strong></div>
+        </div>
+        <div class="algo-group server-group">
+          <div class="algo-line indent-1" set:html={lines.l14} />
+          <div class="algo-line indent-2 algo-math" set:html={lines.agg} />
+        </div>
+        <div class="algo-line">15: <strong>end for</strong></div>
+        <div class="algo-line" set:html={lines.l16} />
+      </div>
+    </div>
+
+    <!-- Partitioning Algorithms -->
+    <h3 class="subsection-title">Client Partitioning Strategies</h3>
+    <p class="subsection-description">We define three novel client partitioning methods to systematically study heterogeneity challenges in decentralized agent learning.</p>
+
+    <div class="algorithm-cards">
+      <!-- PreferencePartition -->
+      <div class="algorithm-card">
+        <div class="algorithm-header small-header">Algorithm 2: PreferencePartition</div>
+        <div class="algorithm-body small-body">
+          <div class="algo-line requirement" set:html={lines.pref_req} />
+          <div class="algo-line" set:html={lines.pref1} />
+          <div class="algo-line" set:html={lines.pref2} />
+          <div class="algo-line indent-1" set:html={lines.pref3} />
+          <div class="algo-line indent-1" set:html={lines.pref4} />
+          <div class="algo-line indent-1">5: &nbsp;&nbsp;Sample items without replacement per category</div>
+          <div class="algo-line">6: <strong>end for</strong></div>
+        </div>
+      </div>
+
+      <!-- CoveragePartition -->
+      <div class="algorithm-card">
+        <div class="algorithm-header small-header">Algorithm 3: CoveragePartition</div>
+        <div class="algorithm-body small-body">
+          <div class="algo-line requirement" set:html={lines.cov_req} />
+          <div class="algo-line" set:html={lines.cov1} />
+          <div class="algo-line" set:html={lines.cov2} />
+          <div class="algo-line">3: Rescale and round sizes to sum $T$ within bounds</div>
+          <div class="algo-line">4: <strong>for</strong> each item <strong>do</strong></div>
+          <div class="algo-line indent-1" set:html={lines.cov5} />
+          <div class="algo-line">6: <strong>end for</strong></div>
+        </div>
+      </div>
+
+      <!-- HardnessPartition -->
+      <div class="algorithm-card">
+        <div class="algorithm-header small-header">Algorithm 4: HardnessPartition</div>
+        <div class="algorithm-body small-body">
+          <div class="algo-line requirement" set:html={lines.hard_req} />
+          <div class="algo-line" set:html={lines.hard1} />
+          <div class="algo-line" set:html={lines.hard2} />
+          <div class="algo-line indent-1" set:html={lines.hard3} />
+          <div class="algo-line indent-1" set:html={lines.hard4} />
+          <div class="algo-line">5: <strong>end for</strong></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .algorithm-block {
+    max-width: 850px;
+    margin: 0 auto 2.5rem;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+  }
+
+  .algorithm-header {
+    background: linear-gradient(135deg, #2a2f6c, #3a4b8e);
+    color: white;
+    padding: 0.85rem 1.25rem;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .algorithm-body {
+    padding: 1.25rem 1.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.92rem;
+    line-height: 2;
+  }
+
+  .algo-line {
+    margin-bottom: 0.1rem;
+  }
+
+  .algo-line.requirement {
+    margin-bottom: 0.5rem;
+    color: #555;
+  }
+
+  .indent-1 { padding-left: 1.5rem; }
+  .indent-2 { padding-left: 3rem; }
+  .indent-3 { padding-left: 4.5rem; }
+
+  .algo-comment {
+    color: #888;
+    font-size: 0.85em;
+  }
+
+  .algo-math {
+    padding: 0.25rem 0;
+  }
+
+  .client-color { color: #e07c5a; font-weight: 600; }
+  .server-color { color: #5a8de0; font-weight: 600; }
+
+  .client-group {
+    border-left: 3px solid #e07c5a;
+    margin: 0.5rem 0;
+    padding-left: 0.5rem;
+    background: rgba(224, 124, 90, 0.04);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .server-group {
+    border-left: 3px solid #5a8de0;
+    margin: 0.5rem 0;
+    padding-left: 0.5rem;
+    background: rgba(90, 141, 224, 0.04);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .subsection-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2a2f6c;
+    text-align: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .subsection-description {
+    text-align: center;
+    color: #555;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .algorithm-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .algorithm-card {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid #e8e8e8;
+  }
+
+  .small-header {
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .small-body {
+    padding: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.9;
+  }
+
+  @media (max-width: 768px) {
+    .algorithm-body {
+      padding: 1rem;
+      font-size: 0.82rem;
+      overflow-x: auto;
+    }
+
+    .indent-3 { padding-left: 3rem; }
+
+    .algorithm-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

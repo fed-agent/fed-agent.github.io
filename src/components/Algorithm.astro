@@ -1,0 +1,397 @@
+---
+// Algorithm.astro - Main results table comparing FedAgent with baselines
+---
+
+<section id="results" class="content-section alt-background">
+  <div class="section-container">
+    <h2 class="section-title">Main Results</h2>
+    <p class="section-description">Performance comparison of Local Training, Centralized Training, and FedAgent across different LLM agents on ALFWorld and WebShop benchmarks.</p>
+
+    <div class="leaderboard-container">
+      <div class="table-controls">
+        <div class="model-legend">
+          <span class="legend-item">
+            <span class="legend-color local-legend"></span>
+            Local Training
+          </span>
+          <span class="legend-item">
+            <span class="legend-color centralized-legend"></span>
+            Centralized Training
+          </span>
+          <span class="legend-item">
+            <span class="legend-color fedagent-legend"></span>
+            FedAgent (Ours)
+          </span>
+        </div>
+      </div>
+
+      <!-- Qwen2.5-1.5B-Instruct -->
+      <div class="model-group">
+        <h3 class="model-group-title">Qwen2.5-1.5B-Instruct</h3>
+        <div class="table-wrapper">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th rowspan="2">Method</th>
+                <th colspan="7" class="header-alfworld">ALFWorld (Success Rate %)</th>
+                <th colspan="2" class="header-webshop">WebShop</th>
+              </tr>
+              <tr>
+                <th class="sub-header">Pick</th>
+                <th class="sub-header">Look</th>
+                <th class="sub-header">Clean</th>
+                <th class="sub-header">Heat</th>
+                <th class="sub-header">Cool</th>
+                <th class="sub-header">Pick2</th>
+                <th class="sub-header highlighted-col">All</th>
+                <th class="sub-header highlighted-col">Score</th>
+                <th class="sub-header highlighted-col">Succ.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 21)</td>
+                <td>42.9</td><td>25.0</td><td>38.5</td><td>37.5</td><td>14.3</td><td>14.3</td><td>29.7</td><td>69.9</td><td>57.0</td>
+              </tr>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 42)</td>
+                <td>50.0</td><td>37.5</td><td>76.9</td><td>25.0</td><td>42.9</td><td>14.3</td><td>45.3</td><td>75.1</td><td>53.1</td>
+              </tr>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 84)</td>
+                <td>50.0</td><td>37.5</td><td>46.2</td><td>25.0</td><td>28.6</td><td>0.0</td><td>34.4</td><td>72.7</td><td>47.7</td>
+              </tr>
+              <tr class="centralized-model">
+                <td class="model-name">Centralized</td>
+                <td>64.3</td><td>37.5</td><td>69.2</td><td>50.0</td><td>42.9</td><td>28.6</td><td>51.6</td><td>79.9</td><td>57.8</td>
+              </tr>
+              <tr class="fedagent-model">
+                <td class="model-name"><strong>FedAgent</strong></td>
+                <td class="best-score">80.0</td><td class="best-score">75.0</td><td>53.8</td><td>37.5</td><td class="best-score">83.3</td><td class="best-score">50.0</td><td class="best-score">64.1</td><td class="best-score">83.2</td><td class="best-score">61.7</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Qwen2.5-3B-Instruct -->
+      <div class="model-group">
+        <h3 class="model-group-title">Qwen2.5-3B-Instruct</h3>
+        <div class="table-wrapper">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th rowspan="2">Method</th>
+                <th colspan="7" class="header-alfworld">ALFWorld (Success Rate %)</th>
+                <th colspan="2" class="header-webshop">WebShop</th>
+              </tr>
+              <tr>
+                <th class="sub-header">Pick</th>
+                <th class="sub-header">Look</th>
+                <th class="sub-header">Clean</th>
+                <th class="sub-header">Heat</th>
+                <th class="sub-header">Cool</th>
+                <th class="sub-header">Pick2</th>
+                <th class="sub-header highlighted-col">All</th>
+                <th class="sub-header highlighted-col">Score</th>
+                <th class="sub-header highlighted-col">Succ.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 21)</td>
+                <td>41.5</td><td>12.5</td><td>34.9</td><td>51.0</td><td>18.9</td><td>21.2</td><td>31.3</td><td>59.8</td><td>55.0</td>
+              </tr>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 42)</td>
+                <td>46.5</td><td>37.5</td><td>24.4</td><td>15.0</td><td>33.7</td><td>33.3</td><td>28.2</td><td>61.3</td><td>59.3</td>
+              </tr>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 84)</td>
+                <td>22.8</td><td>27.5</td><td>39.1</td><td>46.3</td><td>48.3</td><td>36.5</td><td>29.9</td><td>77.6</td><td>58.6</td>
+              </tr>
+              <tr class="centralized-model">
+                <td class="model-name">Centralized</td>
+                <td>94.1</td><td>80.0</td><td>64.3</td><td>42.9</td><td>50.0</td><td>22.2</td><td>62.5</td><td>86.0</td><td>63.9</td>
+              </tr>
+              <tr class="fedagent-model">
+                <td class="model-name"><strong>FedAgent</strong></td>
+                <td class="best-score">95.5</td><td>62.5</td><td>49.7</td><td>47.5</td><td class="best-score">85.3</td><td class="best-score">45.1</td><td class="best-score">65.2</td><td>85.5</td><td>63.1</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Qwen2.5-7B-Instruct -->
+      <div class="model-group">
+        <h3 class="model-group-title">Qwen2.5-7B-Instruct</h3>
+        <div class="table-wrapper">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th rowspan="2">Method</th>
+                <th colspan="7" class="header-alfworld">ALFWorld (Success Rate %)</th>
+                <th colspan="2" class="header-webshop">WebShop</th>
+              </tr>
+              <tr>
+                <th class="sub-header">Pick</th>
+                <th class="sub-header">Look</th>
+                <th class="sub-header">Clean</th>
+                <th class="sub-header">Heat</th>
+                <th class="sub-header">Cool</th>
+                <th class="sub-header">Pick2</th>
+                <th class="sub-header highlighted-col">All</th>
+                <th class="sub-header highlighted-col">Score</th>
+                <th class="sub-header highlighted-col">Succ.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 21)</td>
+                <td>35.5</td><td>25.0</td><td>61.0</td><td>25.9</td><td>35.8</td><td>45.2</td><td>38.4</td><td>70.9</td><td>49.2</td>
+              </tr>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 42)</td>
+                <td>29.0</td><td>45.0</td><td>18.8</td><td>25.6</td><td>15.9</td><td>38.0</td><td>42.1</td><td>85.2</td><td>33.6</td>
+              </tr>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 84)</td>
+                <td>34.7</td><td>47.5</td><td>44.4</td><td>51.3</td><td>40.1</td><td>21.8</td><td>35.7</td><td>60.6</td><td>39.3</td>
+              </tr>
+              <tr class="centralized-model">
+                <td class="model-name">Centralized</td>
+                <td>93.7</td><td>82.5</td><td>71.5</td><td>47.9</td><td>63.2</td><td>31.9</td><td>73.3</td><td>78.8</td><td>64.7</td>
+              </tr>
+              <tr class="fedagent-model">
+                <td class="model-name"><strong>FedAgent</strong></td>
+                <td class="best-score">94.5</td><td class="best-score">85.0</td><td>56.0</td><td class="best-score">62.5</td><td class="best-score">86.7</td><td>42.8</td><td class="best-score">75.5</td><td class="best-score">89.0</td><td class="best-score">68.9</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Llama-3.2-3B-Instruct -->
+      <div class="model-group">
+        <h3 class="model-group-title">Llama-3.2-3B-Instruct</h3>
+        <div class="table-wrapper">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th rowspan="2">Method</th>
+                <th colspan="7" class="header-alfworld">ALFWorld (Success Rate %)</th>
+                <th colspan="2" class="header-webshop">WebShop</th>
+              </tr>
+              <tr>
+                <th class="sub-header">Pick</th>
+                <th class="sub-header">Look</th>
+                <th class="sub-header">Clean</th>
+                <th class="sub-header">Heat</th>
+                <th class="sub-header">Cool</th>
+                <th class="sub-header">Pick2</th>
+                <th class="sub-header highlighted-col">All</th>
+                <th class="sub-header highlighted-col">Score</th>
+                <th class="sub-header highlighted-col">Succ.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 21)</td>
+                <td>39.8</td><td>50.0</td><td>17.9</td><td>40.0</td><td>20.7</td><td>34.0</td><td>38.1</td><td>65.3</td><td>50.5</td>
+              </tr>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 42)</td>
+                <td>18.2</td><td>55.0</td><td>41.9</td><td>34.3</td><td>41.0</td><td>25.0</td><td>35.0</td><td>67.0</td><td>51.0</td>
+              </tr>
+              <tr class="local-model">
+                <td class="model-name">Local (Client 84)</td>
+                <td>29.9</td><td>32.5</td><td>39.0</td><td>18.9</td><td>18.8</td><td>37.6</td><td>29.7</td><td>70.2</td><td>55.7</td>
+              </tr>
+              <tr class="centralized-model">
+                <td class="model-name">Centralized</td>
+                <td>72.4</td><td>62.5</td><td>59.3</td><td>45.2</td><td>53.7</td><td>27.9</td><td>54.9</td><td>76.3</td><td>56.2</td>
+              </tr>
+              <tr class="fedagent-model">
+                <td class="model-name"><strong>FedAgent</strong></td>
+                <td class="best-score">83.7</td><td>57.5</td><td class="best-score">60.6</td><td class="best-score">55.9</td><td class="best-score">65.3</td><td>24.9</td><td class="best-score">61.2</td><td>74.4</td><td class="best-score">57.8</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .leaderboard-container {
+    margin: 2rem 0;
+  }
+
+  .table-controls {
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .model-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+
+  .local-legend {
+    background-color: #f8f9fa;
+  }
+
+  .centralized-legend {
+    background-color: #fff5f0;
+  }
+
+  .fedagent-legend {
+    background-color: #eef4ff;
+  }
+
+  .model-group {
+    margin-bottom: 2rem;
+  }
+
+  .model-group-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #2a2f6c;
+    margin-bottom: 0.75rem;
+    padding-left: 0.5rem;
+    border-left: 4px solid #2a2f6c;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    background: white;
+  }
+
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .leaderboard-table th {
+    background: linear-gradient(135deg, #2a2f6c, #3a4b8e);
+    color: white;
+    padding: 0.7rem 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .leaderboard-table th:last-child {
+    border-right: none;
+  }
+
+  .header-alfworld {
+    background: linear-gradient(135deg, #3a5a8e, #4a6b9e) !important;
+  }
+
+  .header-webshop {
+    background: linear-gradient(135deg, #5a3a8e, #6b4a9e) !important;
+  }
+
+  .sub-header {
+    background: linear-gradient(135deg, #4a5b8e, #5a6b9e) !important;
+    font-size: 0.8rem !important;
+    padding: 0.5rem 0.4rem !important;
+  }
+
+  .highlighted-col {
+    background: linear-gradient(135deg, #2a4f6c, #3a6080) !important;
+  }
+
+  .leaderboard-table td {
+    padding: 0.6rem 0.5rem;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.88rem;
+  }
+
+  .model-name {
+    text-align: left !important;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .local-model {
+    background-color: #f8f9fa;
+  }
+
+  .local-model:hover {
+    background-color: #e9ecef;
+  }
+
+  .centralized-model {
+    background-color: #fff5f0;
+  }
+
+  .centralized-model:hover {
+    background-color: #ffe6d9;
+  }
+
+  .fedagent-model {
+    background-color: #eef4ff;
+    font-weight: 500;
+  }
+
+  .fedagent-model:hover {
+    background-color: #ddeaff;
+  }
+
+  .best-score {
+    background-color: rgba(42, 47, 108, 0.15);
+    font-weight: 700;
+    color: #1e2a5f;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .leaderboard-table {
+      font-size: 0.8rem;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td {
+      padding: 0.5rem 0.3rem;
+    }
+
+    .model-name {
+      font-size: 0.75rem;
+    }
+
+    .model-legend {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
+  }
+</style>

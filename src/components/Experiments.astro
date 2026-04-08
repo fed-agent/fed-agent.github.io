@@ -1,0 +1,118 @@
+---
+// Experiments.astro - Experiment figures section
+---
+
+<section id="experiments" class="content-section">
+  <div class="section-container">
+    <h2 class="section-title">Experiments</h2>
+
+    <!-- FedAgent vs Centralized -->
+    <div class="experiment-block">
+      <h3 class="experiment-title">FedAgent Matches Centralized Training</h3>
+      <p class="experiment-description">
+        FedAgent with 100 clients and 2 selected per round achieves comparable success rates to centralized training on all pooled data, despite never sharing local data.
+      </p>
+      <div class="figure-container">
+        <img src="/figures/centralized_vs_fedagent.png" alt="FedAgent vs Centralized Training" class="experiment-figure" />
+      </div>
+    </div>
+
+    <!-- Different Decentralized Settings -->
+    <div class="experiment-block">
+      <h3 class="experiment-title">Training Dynamics in Different Decentralized Settings</h3>
+      <p class="experiment-description">
+        FedAgent exhibits high sensitivity on the number of clients selected per round and epochs per client per round, while showing relatively low sensitivity to the number of samples per client.
+      </p>
+      <div class="figure-container">
+        <img src="/figures/decentralized_setting.png" alt="Training Dynamics of FedAgent in Different Decentralized Settings" class="experiment-figure" />
+      </div>
+    </div>
+
+    <!-- Two-Level Heterogeneity -->
+    <div class="experiment-block">
+      <h3 class="experiment-title">Two-Level Heterogeneity Analysis</h3>
+      <p class="experiment-description">
+        Task mismatch alone barely affects training, but environment mismatch collapses the shared policy to near-zero, revealing the critical role of environment-level heterogeneity.
+      </p>
+      <div class="figure-row">
+        <div class="figure-item">
+          <img src="/figures/webshop_task_vs_env_heterogeneity.png" alt="WebShop: Task vs Environment Heterogeneity" class="experiment-figure" />
+          <p class="figure-caption">(a) WebShop</p>
+        </div>
+        <div class="figure-item">
+          <img src="/figures/alfworld_task_vs_env_heterogeneity.png" alt="ALFWorld: Task vs Environment Heterogeneity" class="experiment-figure" />
+          <p class="figure-caption">(b) ALFWorld</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .experiment-block {
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+  }
+
+  .experiment-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2a2f6c;
+    margin-bottom: 0.75rem;
+  }
+
+  .experiment-description {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    max-width: 800px;
+  }
+
+  .figure-container {
+    text-align: center;
+  }
+
+  .experiment-figure {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .figure-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .figure-item {
+    text-align: center;
+  }
+
+  .figure-caption {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  @media (max-width: 768px) {
+    .experiment-block {
+      padding: 1.25rem;
+    }
+
+    .figure-row {
+      grid-template-columns: 1fr;
+    }
+
+    .experiment-title {
+      font-size: 1.1rem;
+    }
+  }
+</style>

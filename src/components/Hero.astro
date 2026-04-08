@@ -1,0 +1,225 @@
+---
+// Hero.astro - FedAgent project hero section
+---
+<section id="hero" class="content-section hero-section">
+  <div class="title-wrapper">
+    <div class="logo-title-row">
+      <img src="/logo.png" alt="FedAgent Logo" class="title-logo" />
+      <span class="project-name" id="animated-name">FedAgent</span>
+    </div>
+    <h1 class="main-subtitle-line">
+      <span id="animated-title" class="subtitle-text">Federated Agent Reinforcement Learning</span>
+    </h1>
+  </div>
+
+  <div class="resources-section">
+    <div class="resources-buttons">
+      <a href="#" class="resource-button">
+        <i class="fas fa-archive resource-icon"></i>
+        <span>arXiv</span>
+      </a>
+      <a href="#" class="resource-button">
+        <i class="fas fa-file-alt resource-icon"></i>
+        <span>Paper (PDF)</span>
+      </a>
+      <a href="https://github.com/fed-agent" class="resource-button">
+        <i class="fab fa-github resource-icon"></i>
+        <span>Code</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="teaser-figure">
+    <img
+      class="teaser-image"
+      src="/figures/fedagent_figure.png"
+      alt="FedAgent Framework Overview"
+    />
+  </div>
+
+  <div class="authors-section">
+    <div class="authors-list">
+      <p class="author-line">
+        <a href="https://canyuchen.com/">Canyu Chen<sup class="affiliation-marker">1*</sup></a>,
+        <a href="#">Kangyu Zhu<sup class="affiliation-marker">2*</sup></a>,
+        <a href="https://zhaorun-chen.github.io/">Zhaorun Chen<sup class="affiliation-marker">3</sup></a>,
+        <a href="#">Zhanhui Zhou<sup class="affiliation-marker">4</sup></a>,
+        <a href="#">Shizhe Diao<sup class="affiliation-marker">5</sup></a>
+      </p>
+      <p class="author-line">
+        <a href="#">Yiping Lu<sup class="affiliation-marker">1</sup></a>,
+        <a href="https://tianli.io/">Tian Li<sup class="affiliation-marker">3</sup></a>,
+        <a href="https://limanling.github.io/">Manling Li<sup class="affiliation-marker">1&dagger;</sup></a>,
+        <a href="https://people.eecs.berkeley.edu/~dawnsong/">Dawn Song<sup class="affiliation-marker">4&dagger;</sup></a>
+      </p>
+      <p class="equal-contribution">*Equal contribution, &dagger;Equal advising</p>
+      <p class="affiliations">
+        <sup class="affiliation-marker">1</sup>Northwestern University,
+        <sup class="affiliation-marker">2</sup>Brown University,
+        <sup class="affiliation-marker">3</sup>The University of Chicago,
+        <sup class="affiliation-marker">4</sup>University of California, Berkeley,
+        <sup class="affiliation-marker">5</sup>NVIDIA Research
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="abstract" class="content-section">
+  <div class="section-container">
+    <h2 class="section-title">Abstract</h2>
+    <p class="abstract-text">
+      LLM-powered AI agents are trained on real-world user interactions, such as customer purchase queries in e-commerce (WebShop) or household routines in embodied environments (ALFWorld), data that is inherently private and cannot be centrally pooled. <strong>Can we train AI agents while protecting users' data privacy?</strong> We introduce <strong>FedAgent</strong> (Federated Agent Reinforcement Learning), a decentralized training paradigm where each client runs local RL, sends only model parameters to a server for aggregation, and keeps all data local. Unlike conventional federated RL with low-dimensional state/action spaces, FedAgent tackles the unique challenges of natural language state and action spaces, diverse tasks, and complex environment interactions. We construct <strong>FedAgentGym</strong>, the first decentralized agent learning environment with four LLM agents, two application scenarios, three decentralized settings, and a new <strong>two-level agent heterogeneity</strong> framework: <em>Task Heterogeneity</em> (Preference, Coverage, Hardness, i.e. what types, how many, and how hard are each client's tasks) and <em>Environment Heterogeneity</em> (clients interact with fundamentally different worlds). Empirically, FedAgent matches centralized training and is robust to all three axes of task heterogeneity, but environment mismatch alone collapses the shared policy to near-zero. We provide a theoretical explanation via a <strong>convergence bound</strong> that decomposes error into stochastic noise, task-level drift, and environment-level drift, and a <strong>&sigma;&sup2;-Dominance Theory</strong> showing that the enormous gradient noise from exponential action spaces absorbs task divergence but cannot absorb the systematic conflict of environment divergence.
+    </p>
+  </div>
+</section>
+
+<script>
+  // Animate title characters
+  function animateChars(el, baseDelay, charDelay) {
+    const text = el.textContent || '';
+    el.innerHTML = '';
+    text.split('').forEach((char, i) => {
+      const span = document.createElement('span');
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      span.className = 'reveal-char';
+      span.style.animationDelay = `${baseDelay + i * charDelay}s`;
+      el.appendChild(span);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const nameEl = document.getElementById('animated-name');
+    const titleEl = document.getElementById('animated-title');
+
+    // Step 1: animate "FedAgent" char by char
+    if (nameEl) animateChars(nameEl, 0, 0.07);
+
+    // Step 2: fade in subtitle as a whole line after FedAgent finishes
+    if (titleEl) {
+      titleEl.style.opacity = '0';
+      titleEl.style.transform = 'translateY(10px)';
+      titleEl.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      setTimeout(() => {
+        titleEl.style.opacity = '1';
+        titleEl.style.transform = 'translateY(0)';
+      }, 700);
+    }
+  });
+</script>
+
+<style>
+  .title-wrapper {
+    text-align: center;
+  }
+
+  .logo-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .title-logo {
+    width: 72px;
+    height: 72px;
+  }
+
+  .project-name {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: #2a2f6c;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .main-subtitle-line {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #333;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  .teaser-figure {
+    margin: 2rem auto;
+    text-align: center;
+    max-width: 900px;
+  }
+
+  .teaser-image {
+    width: 100%;
+    max-width: 650px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    animation: fadeInUp 0.8s ease-out 0.3s both;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  #abstract {
+    padding-top: 2rem;
+  }
+
+  .abstract-text {
+    max-width: 900px;
+    margin: 0 auto;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #444;
+    text-align: justify;
+  }
+
+  .abstract-text strong {
+    color: #2a2f6c;
+  }
+
+  @media (max-width: 768px) {
+    .title-logo {
+      width: 52px;
+      height: 52px;
+    }
+
+    .project-name {
+      font-size: 2.2rem;
+    }
+
+    .main-subtitle-line {
+      font-size: 1.5rem;
+    }
+
+    .teaser-image {
+      border-radius: 8px;
+    }
+
+    .abstract-text {
+      font-size: 0.95rem;
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .title-logo {
+      width: 40px;
+      height: 40px;
+    }
+
+    .project-name {
+      font-size: 1.8rem;
+    }
+
+    .main-subtitle-line {
+      font-size: 1.2rem;
+    }
+  }
+</style>

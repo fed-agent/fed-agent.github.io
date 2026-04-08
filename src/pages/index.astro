@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import PseudoCode from '../components/PseudoCode.astro';
+import Algorithm from '../components/Algorithm.astro';
+import Experiments from '../components/Experiments.astro';
+import Theory from '../components/Theory.astro';
+import Heterogeneity from '../components/Heterogeneity.astro';
+import AuthorsCitation from '../components/AuthorsCitation.astro';
+
+// Import component-specific styles
+import '../styles/section.css';
+import '../styles/hero.css';
+import '../styles/authors.css';
+import '../styles/resources.css';
+
+const pageTitle = "FedAgent: Federated Agent Reinforcement Learning";
+---
+<Layout title={pageTitle}>
+  <!-- 1. Hero + Abstract -->
+  <Hero />
+
+  <!-- 2. Algorithm Pseudocode -->
+  <PseudoCode />
+
+  <!-- 3. Main Results Table -->
+  <Algorithm />
+
+  <!-- 4. Experiment Figures -->
+  <Experiments />
+
+  <!-- 5. Theoretical Analysis -->
+  <Theory />
+
+  <!-- 6. Heterogeneity Distributions (Appendix C) -->
+  <Heterogeneity />
+
+  <!-- 6. Citation -->
+  <AuthorsCitation />
+</Layout>
+
+<script>
+  import { initCitationCopy } from '../scripts/citation';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initCitationCopy();
+
+    const animateTitle = () => {
+      const titleElement = document.getElementById('animated-title');
+
+      if (titleElement) {
+        const text = titleElement.textContent || '';
+        titleElement.innerHTML = '';
+
+        text.split('').forEach((char, index) => {
+          const span = document.createElement('span');
+          span.textContent = char === ' ' ? '\u00A0' : char;
+          span.className = 'reveal-char';
+          span.style.animationDelay = `${index * 0.04}s`;
+          titleElement.appendChild(span);
+        });
+      }
+    };
+
+    animateTitle();
+  });
+</script>
