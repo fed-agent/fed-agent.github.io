@@ -65,5 +65,10 @@
 }
 
 .content-section.alt-background {
-  background-color: #ffffff; /* White background for alternating sections */
+  background-color: #ffffff;
+}
+
+.content-section {
+  width: 100%;
+  max-width: 100%;
 } 

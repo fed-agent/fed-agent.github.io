@@ -12,20 +12,22 @@
 html {
     font-family: 'Inter', sans-serif;
     background-color: #f0f3f8;
+    overflow-x: hidden;
 }
 
 body {
     display: flex;
     flex-direction: column;
     min-height: 100%;
+    width: 100%;
+    overflow-x: hidden;
 
     background-image: url('/src/assets/background-blurred.svg');
-    /* Note: You may need to move this file to public/ or ensure your Astro config handles /src/ paths */
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    background-color: #f0f3f8; /* Fallback color */
+    background-color: #f0f3f8;
 }
 
 main {
