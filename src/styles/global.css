@@ -133,7 +133,7 @@ animation: revealSubtitle 1s forwards;
     line-height: 1;
   }
 
-/* 删除重复的Hero样式，避免冲突 */
+/* Misc layout styles */
 .diagram-placeholder { 
   margin-top: 3rem; 
   margin-bottom: 2rem;
