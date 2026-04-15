@@ -854,8 +854,11 @@ animation: revealSubtitle 1s forwards;
     height: 20px;
   }
   header .info-badge {
-    padding: 6px 10px;
+    padding: 6px;
     font-size: 0.9rem;
+  }
+  header .info-badge .badge-text {
+    display: none;
   }
   header .main-nav a {
     font-size: 0.85rem;
