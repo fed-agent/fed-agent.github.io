@@ -1,0 +1,23 @@
+---
+// DistBlock.astro - interactive distribution bar chart from /data/distributions.json.
+// toggles: [{ dist, key, label }] over a single canvas (client-distribution simulations).
+interface Toggle { dist: string; key: string; label: string }
+interface Props { toggles: Toggle[]; height?: number; caption?: string; id: string }
+const { toggles, height = 240, caption = '', id } = Astro.props;
+const first = toggles[0];
+---
+<div class="chart-block">
+  <div class="chart-controls">
+    <div class="seg" data-chart-toggle data-target={id}>
+      {toggles.map((t, i) => (
+        <button class={`seg-btn${i === 0 ? ' active' : ''}`} data-dist={t.dist} data-axis={t.key}>{t.label}</button>
+      ))}
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-canvas-wrap" style={`height:${height}px`}>
+      <canvas id={id} data-dist={first.dist} data-axis={first.key}></canvas>
+    </div>
+  </div>
+  {caption && <p class="chart-caption" set:html={caption}></p>}
+</div>

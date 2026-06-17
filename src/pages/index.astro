@@ -1,66 +1,28 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
-import PseudoCode from '../components/PseudoCode.astro';
-import Algorithm from '../components/Algorithm.astro';
-import Experiments from '../components/Experiments.astro';
-import Theory from '../components/Theory.astro';
+import Asymmetry from '../components/Asymmetry.astro';
+import Method from '../components/Method.astro';
 import Heterogeneity from '../components/Heterogeneity.astro';
+import Mechanism from '../components/Mechanism.astro';
+import Results from '../components/Results.astro';
 import AuthorsCitation from '../components/AuthorsCitation.astro';
 
-// Import component-specific styles
-import '../styles/section.css';
-import '../styles/hero.css';
-import '../styles/authors.css';
-import '../styles/resources.css';
-
-const pageTitle = "FedAgent: Federated Agent Reinforcement Learning";
+const pageTitle = 'FedAgent · Is Decentralized LLM Agent RL Robust to Heterogeneity?';
 ---
 <Layout title={pageTitle}>
-  <!-- 1. Hero + Abstract -->
   <Hero />
-
-  <!-- 2. Algorithm Pseudocode -->
-  <PseudoCode />
-
-  <!-- 3. Main Results Table -->
-  <Algorithm />
-
-  <!-- 4. Experiment Figures -->
-  <Experiments />
-
-  <!-- 5. Theoretical Analysis -->
-  <Theory />
-
-  <!-- 6. Heterogeneity Distributions (Appendix C) -->
+  <Asymmetry />
+  <Method />
   <Heterogeneity />
-
-  <!-- 7. Citation -->
+  <Mechanism />
+  <Results />
   <AuthorsCitation />
 </Layout>
 
 <script>
+  // Mobile dropdown toggle for the header "More Research" menu
   document.addEventListener('DOMContentLoaded', () => {
-    const animateTitle = () => {
-      const titleElement = document.getElementById('animated-title');
-
-      if (titleElement) {
-        const text = titleElement.textContent || '';
-        titleElement.innerHTML = '';
-
-        text.split('').forEach((char, index) => {
-          const span = document.createElement('span');
-          span.textContent = char === ' ' ? '\u00A0' : char;
-          span.className = 'reveal-char';
-          span.style.animationDelay = `${index * 0.04}s`;
-          titleElement.appendChild(span);
-        });
-      }
-    };
-
-    animateTitle();
-
-    // Dropdown toggle for mobile
     const toggle = document.querySelector('.dropdown-toggle');
     const dropdown = document.querySelector('.dropdown');
     if (toggle && dropdown) {
@@ -69,9 +31,7 @@ const pageTitle = "FedAgent: Federated Agent Reinforcement Learning";
         dropdown.classList.toggle('open');
       });
       document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target as Node)) {
-          dropdown.classList.remove('open');
-        }
+        if (!dropdown.contains(e.target as Node)) dropdown.classList.remove('open');
       });
     }
   });

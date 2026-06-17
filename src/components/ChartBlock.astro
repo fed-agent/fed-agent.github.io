@@ -1,0 +1,50 @@
+---
+// ChartBlock.astro - interactive chart from /data/charts.json (rendered by chartClient.ts).
+// modes: 'single' (fig+axis), 'pair' (axes[]), 'toggle' (fig + toggles[] over one canvas).
+interface Toggle { key: string; label: string; fig?: string }
+interface AxisRef { key: string; title?: string }
+interface Props {
+  fig: string;
+  mode?: 'single' | 'pair' | 'toggle';
+  axis?: string;
+  axes?: AxisRef[];
+  toggles?: Toggle[];
+  height?: number;
+  caption?: string;
+  id?: string;
+}
+const { fig, mode = 'single', axis = '', axes = [], toggles = [], height = 380, caption = '', id } = Astro.props;
+const cid = id || `c-${fig}-${axis || (toggles[0]?.key) || 'x'}`.replace(/[^a-z0-9-]/gi, '');
+---
+<div class="chart-block">
+  {mode === 'toggle' && (
+    <div class="chart-controls">
+      <div class="seg" data-chart-toggle data-target={cid}>
+        {toggles.map((t, i) => (
+          <button class={`seg-btn${i === 0 ? ' active' : ''}`} data-axis={t.key} data-fig={t.fig || fig}>{t.label}</button>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {mode === 'pair' ? (
+    <div class="chart-grid-2">
+      {axes.map((a) => (
+        <div class="chart-card">
+          {a.title && <div class="chart-card-title">{a.title}</div>}
+          <div class="chart-canvas-wrap" style={`height:${height}px`}>
+            <canvas data-fig={fig} data-axis={a.key}></canvas>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="chart-card">
+      <div class="chart-canvas-wrap" style={`height:${height}px`}>
+        <canvas id={cid} data-fig={fig} data-axis={mode === 'toggle' ? (toggles[0]?.key || axis) : axis}></canvas>
+      </div>
+    </div>
+  )}
+
+  {caption && <p class="chart-caption" set:html={caption}></p>}
+</div>

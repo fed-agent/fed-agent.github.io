@@ -1,0 +1,206 @@
+---
+// Results.astro: figures + GRPO/PPO performance table (original style)
+import ChartBlock from './ChartBlock.astro';
+const cols = ['Pick', 'Look', 'Clean', 'Heat', 'Cool', 'Pick2', 'All', 'Score', 'Succ.'];
+const models = ['Qwen2.5-1.5B-Instruct', 'Qwen2.5-3B-Instruct', 'Qwen2.5-7B-Instruct', 'Llama-3.2-3B-Instruct'];
+const r = (m, vals, kind) => ({ m, vals, kind });
+const data = {
+  grpo: {
+    'Qwen2.5-1.5B-Instruct': [
+      r('Local · 21', [42.9, 25.0, 38.5, 37.5, 14.3, 14.3, 29.7, 69.9, 57.0], 'local'),
+      r('Local · 42', [50.0, 37.5, 76.9, 25.0, 42.9, 14.3, 45.3, 75.1, 53.1], 'local'),
+      r('Local · 84', [50.0, 37.5, 46.2, 25.0, 28.6, 0.0, 34.4, 72.7, 47.7], 'local'),
+      r('Centralized', [64.3, 37.5, 69.2, 50.0, 42.9, 28.6, 51.6, 79.9, 57.8], 'central'),
+      r('FedAgent', [80.0, 75.0, 53.8, 37.5, 83.3, 50.0, 64.1, 83.2, 61.7], 'fed'),
+    ],
+    'Qwen2.5-3B-Instruct': [
+      r('Local · 21', [41.5, 12.5, 34.9, 51.0, 18.9, 21.2, 31.3, 59.8, 55.0], 'local'),
+      r('Local · 42', [46.5, 37.5, 24.4, 15.0, 33.7, 33.3, 28.2, 61.3, 59.3], 'local'),
+      r('Local · 84', [22.8, 27.5, 39.1, 46.3, 48.3, 36.5, 29.9, 77.6, 58.6], 'local'),
+      r('Centralized', [94.1, 80.0, 64.3, 42.9, 50.0, 22.2, 62.5, 86.0, 63.9], 'central'),
+      r('FedAgent', [95.5, 62.5, 49.7, 47.5, 85.3, 45.1, 65.2, 85.5, 63.1], 'fed'),
+    ],
+    'Qwen2.5-7B-Instruct': [
+      r('Local · 21', [35.5, 25.0, 61.0, 25.9, 35.8, 45.2, 38.4, 70.9, 49.2], 'local'),
+      r('Local · 42', [29.0, 45.0, 18.8, 25.6, 15.9, 38.0, 42.1, 85.2, 33.6], 'local'),
+      r('Local · 84', [34.7, 47.5, 44.4, 51.3, 40.1, 21.8, 35.7, 60.6, 39.3], 'local'),
+      r('Centralized', [93.7, 82.5, 71.5, 47.9, 63.2, 31.9, 73.3, 78.8, 64.7], 'central'),
+      r('FedAgent', [94.5, 85.0, 56.0, 62.5, 86.7, 42.8, 75.5, 89.0, 68.9], 'fed'),
+    ],
+    'Llama-3.2-3B-Instruct': [
+      r('Local · 21', [39.8, 50.0, 17.9, 40.0, 20.7, 34.0, 38.1, 65.3, 50.5], 'local'),
+      r('Local · 42', [18.2, 55.0, 41.9, 34.3, 41.0, 25.0, 35.0, 67.0, 51.0], 'local'),
+      r('Local · 84', [29.9, 32.5, 39.0, 18.9, 18.8, 37.6, 29.7, 70.2, 55.7], 'local'),
+      r('Centralized', [72.4, 62.5, 59.3, 45.2, 53.7, 27.9, 54.9, 76.3, 56.2], 'central'),
+      r('FedAgent', [83.7, 57.5, 60.6, 55.9, 65.3, 24.9, 61.2, 74.4, 57.8], 'fed'),
+    ],
+  },
+  ppo: {
+    'Qwen2.5-1.5B-Instruct': [
+      r('Local · 21', [37.8, 16.9, 36.0, 37.8, 21.6, 20.8, 28.1, 77.5, 54.0], 'local'),
+      r('Local · 42', [38.9, 35.1, 52.6, 13.2, 32.7, 22.9, 34.1, 69.4, 54.0], 'local'),
+      r('Local · 84', [60.4, 36.8, 34.9, 15.5, 23.6, 6.5, 28.6, 71.5, 45.8], 'local'),
+      r('Centralized', [61.9, 38.3, 72.5, 53.1, 42.9, 28.3, 49.3, 79.0, 55.5], 'central'),
+      r('FedAgent', [81.9, 76.7, 54.1, 39.3, 83.3, 50.3, 64.9, 83.3, 60.1], 'fed'),
+    ],
+    'Qwen2.5-3B-Instruct': [
+      r('Local · 21', [35.5, 15.2, 32.5, 38.9, 13.8, 22.4, 28.9, 70.9, 59.3], 'local'),
+      r('Local · 42', [52.5, 33.0, 35.1, 17.5, 37.1, 22.4, 35.5, 57.0, 55.2], 'local'),
+      r('Local · 84', [33.9, 32.0, 45.8, 38.9, 48.5, 22.4, 37.5, 80.8, 59.3], 'local'),
+      r('Centralized', [92.8, 82.3, 66.8, 40.4, 51.9, 23.9, 59.4, 86.5, 60.8], 'central'),
+      r('FedAgent', [92.2, 64.3, 47.3, 49.5, 82.3, 43.0, 58.0, 82.3, 59.4], 'fed'),
+    ],
+    'Qwen2.5-7B-Instruct': [
+      r('Local · 21', [43.9, 20.9, 51.4, 15.1, 40.7, 30.5, 35.0, 73.9, 45.6], 'local'),
+      r('Local · 42', [40.0, 50.8, 23.9, 15.6, 10.4, 30.5, 27.7, 73.9, 35.6], 'local'),
+      r('Local · 84', [37.5, 49.6, 41.6, 45.2, 38.2, 24.9, 39.5, 50.0, 34.3], 'local'),
+      r('Centralized', [91.0, 80.9, 71.6, 48.2, 64.1, 32.0, 68.3, 75.4, 63.7], 'central'),
+      r('FedAgent', [97.5, 84.6, 52.9, 60.0, 89.8, 42.1, 72.9, 86.7, 71.3], 'fed'),
+    ],
+    'Llama-3.2-3B-Instruct': [
+      r('Local · 21', [46.6, 53.3, 21.5, 33.4, 24.1, 24.0, 29.8, 70.9, 41.9], 'local'),
+      r('Local · 42', [18.3, 48.6, 47.2, 38.5, 36.4, 24.0, 36.7, 62.3, 41.2], 'local'),
+      r('Local · 84', [19.7, 26.5, 33.7, 12.3, 17.8, 24.0, 22.2, 70.9, 52.1], 'local'),
+      r('Centralized', [75.9, 62.6, 56.9, 45.1, 50.5, 26.5, 52.8, 77.7, 53.6], 'central'),
+      r('FedAgent', [81.6, 55.0, 63.1, 54.1, 61.9, 25.5, 59.6, 72.4, 55.0], 'fed'),
+    ],
+  },
+};
+const optimizers = [['grpo', 'GRPO'], ['ppo', 'PPO']];
+---
+<section id="experiments" class="content-section">
+  <div class="section-container">
+    <h2 class="section-title">Experiments</h2>
+    <p class="section-description">
+      Qwen2.5 (1.5B to 7B) and Llama-3.2-3B, under both GRPO and PPO, on WebShop &amp; ALFWorld over 3 seeds.
+    </p>
+
+    <!-- Q1 -->
+    <div class="experiment-block">
+      <h3 class="experiment-title">FedAgent Matches Centralized Training</h3>
+      <p class="experiment-description">
+        Federated and centralized curves converge to nearly identical plateaus, and both far exceed any
+        single client. For example, ALFWorld with Qwen2.5-7B reaches <strong>75.5%</strong> (FedAgent) vs
+        73.3% (centralized) vs 35.7% to 42.1% (local).
+      </p>
+      <ChartBlock fig="main" mode="pair" axes={[{ key: 'webshop', title: 'WebShop' }, { key: 'alfworld', title: 'ALFWorld' }]} height={320}
+        caption="Validation success rate over 210 local epochs under a uniform client distribution. FedAgent (indigo) tracks or exceeds centralized training (grey); hover to read values." />
+    </div>
+
+    <!-- Performance table -->
+    <div class="experiment-block">
+      <h3 class="experiment-title">Per-Category Success Rate (%)</h3>
+      <div class="opt-toggle" id="optToggle">
+        {optimizers.map(([k, label], i) => (
+          <button class={`opt-btn${i === 0 ? ' active' : ''}`} data-opt={k}>{label}</button>
+        ))}
+      </div>
+      {optimizers.map(([opt], oi) => (
+        <div class={`table-scroll opt-table${oi === 0 ? '' : ' hidden'}`} data-opt={opt}>
+          <table class="perf-table">
+            <thead>
+              <tr><th rowspan="2" class="th-method">Method</th><th colspan="7" class="grp-alf">ALFWorld</th><th colspan="2" class="grp-web">WebShop</th></tr>
+              <tr>{cols.map((c) => <th>{c}</th>)}</tr>
+            </thead>
+            <tbody>
+              {models.map((mdl) => (
+                <>
+                  <tr class="model-row"><td colspan="10">{mdl}</td></tr>
+                  {data[opt][mdl].map((row) => (
+                    <tr class={`row-${row.kind}`}>
+                      <td class="cell-method">{row.m}</td>
+                      {row.vals.map((v) => <td>{v.toFixed(1)}</td>)}
+                    </tr>
+                  ))}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+      <p class="table-note">FedAgent rows highlighted. ALFWorld reports success rate; WebShop reports task score and success rate. Mean over 3 seeds.</p>
+    </div>
+
+    <!-- Task-level Pattern A -->
+    <div class="experiment-block">
+      <h3 class="experiment-title">Robust Across Every Task Axis (Pattern A)</h3>
+      <p class="experiment-description">
+        Even at the extreme of preference, coverage, and hardness, the federated curve (blue) tracks the
+        near-uniform baseline (grey) on both benchmarks.
+      </p>
+      <ChartBlock fig="heterogeneous" mode="toggle" height={380}
+        toggles={[{ key: 'preference_webshop', label: 'Preference · WebShop' }, { key: 'preference_alfworld', label: 'Preference · ALFWorld' }, { key: 'coverage_webshop', label: 'Coverage · WebShop' }, { key: 'coverage_alfworld', label: 'Coverage · ALFWorld' }, { key: 'hardness_webshop', label: 'Hardness · WebShop' }, { key: 'hardness_alfworld', label: 'Hardness · ALFWorld' }]}
+        caption="At the extreme knob (indigo) the curve tracks the near-uniform setting (grey): Pattern A, across preference, coverage, and hardness." />
+    </div>
+
+    <!-- Env-level B/C/D -->
+    <div class="experiment-block">
+      <h3 class="experiment-title">A Stable → Degrade → Collapse Spectrum (Patterns B/C/D)</h3>
+      <p class="experiment-description">
+        Across five WebShop environment variants: Catalog Split tracks the baseline (B); Field-Subset &amp;
+        BM25 plateau below it (C); Lookalike &amp; Rank Wrapper collapse under GRPO (D). PPO's clipped update
+        rescues every collapse back to a stable plateau.
+      </p>
+      <ChartBlock fig="env_variants" mode="toggle" height={400}
+        toggles={[{ key: 'grpo', label: 'GRPO' }, { key: 'ppo', label: 'PPO' }]}
+        caption="Five environment variants trace a stable to degrade to collapse spectrum. PPO's clipped update rescues several variants that GRPO collapses on." />
+    </div>
+
+    <!-- Decentralization ablations -->
+    <div class="experiment-block">
+      <h3 class="experiment-title">Decentralization Ablations</h3>
+      <p class="experiment-description">
+        Samples per round, clients per round, and local epochs per round. The default FedAgent setting
+        (indigo) stays robust across these choices on both benchmarks.
+      </p>
+      <ChartBlock fig="decentralized" mode="toggle" height={380}
+        toggles={[{ key: 'samples_webshop', label: 'Samples · WebShop' }, { key: 'samples_alfworld', label: 'Samples · ALFWorld' }, { key: 'clients_webshop', label: 'Clients · WebShop' }, { key: 'clients_alfworld', label: 'Clients · ALFWorld' }, { key: 'epochs_webshop', label: 'Local epochs · WebShop' }, { key: 'epochs_alfworld', label: 'Local epochs · ALFWorld' }]}
+        caption="Each line uses its own training-epoch grid; the default configuration is highlighted in indigo." />
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function () {
+    var btns = document.querySelectorAll('#optToggle .opt-btn');
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        btns.forEach(function (x) { x.classList.toggle('active', x === b); });
+        document.querySelectorAll('.opt-table').forEach(function (t) { t.classList.toggle('hidden', t.dataset.opt !== b.dataset.opt); });
+      });
+    });
+  });
+</script>
+
+<style>
+  .experiment-block { margin-bottom: 3rem; padding: 2rem; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
+  .experiment-title { font-size: 1.3rem; font-weight: 700; color: #2a2f6c; margin-bottom: 0.75rem; }
+  .experiment-description { font-size: 1rem; color: #555; line-height: 1.6; margin-bottom: 1.5rem; }
+  .experiment-description strong { color: #2a2f6c; }
+  .figure-container { text-align: center; }
+  .experiment-figure { max-width: 100%; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+
+  .opt-toggle { display: inline-flex; background: #eef1f7; border-radius: 30px; padding: 3px; margin-bottom: 1.2rem; }
+  .opt-btn { background: none; border: none; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: #555; padding: 0.4rem 1.2rem; border-radius: 30px; cursor: pointer; transition: all 0.2s ease; }
+  .opt-btn.active { background: #2a2f6c; color: #fff; }
+
+  .table-scroll { overflow-x: auto; }
+  .perf-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 680px; }
+  .perf-table th, .perf-table td { padding: 0.4rem 0.5rem; text-align: center; white-space: nowrap; }
+  .th-method { text-align: left !important; }
+  .grp-alf { background: #2a2f6c; color: #fff; border-radius: 6px 6px 0 0; font-size: 0.8rem; letter-spacing: 0.04em; }
+  .grp-web { background: #3a4b8e; color: #fff; border-radius: 6px 6px 0 0; font-size: 0.8rem; letter-spacing: 0.04em; }
+  .perf-table thead tr:nth-child(2) th { font-size: 0.76rem; color: #888; border-bottom: 1.5px solid #e0e0e0; }
+  .model-row td { text-align: left; font-weight: 700; color: #2a2f6c; font-style: italic; background: #f6f8fc; padding: 0.5rem; font-size: 0.84rem; }
+  .cell-method { text-align: left !important; color: #555; }
+  .perf-table tbody tr { border-bottom: 1px solid #f0f0f0; }
+  .row-local td { color: #999; }
+  .row-central .cell-method { font-weight: 600; color: #333; }
+  .row-fed { background: #eef2ff; }
+  .row-fed td { color: #2a2f6c; font-weight: 700; }
+  .table-note { margin-top: 0.9rem; font-size: 0.82rem; color: #888; }
+
+  @media (max-width: 768px) {
+    .experiment-block { padding: 1.25rem; }
+  }
+</style>

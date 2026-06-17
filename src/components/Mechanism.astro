@@ -1,0 +1,130 @@
+---
+// Mechanism.astro: the Asymmetric Robustness Mechanism (original visual idiom)
+const eq_collapse = String.raw`$$\mathcal{J}_{\text{fed}}(\theta)=\mathbb{E}_{\tau\sim\bar{\mathcal{D}}_\tau}\!\big[\mathcal{J}(\pi_\theta;\tau,\mathcal{M}_{\text{env}})\big]$$`;
+const eq_task = String.raw`$$\sup_\theta \mathcal{J}_i(\theta)-\mathcal{J}_i(\hat\theta_{\text{fed}})\ \le\ \sqrt{\big(1+\chi^2\big)\,R_{\max} H\,(\epsilon_{\text{approx}}+\epsilon_{\text{opt}})}$$`;
+const eq_env = String.raw`$$\Delta_{\text{pol}}\ \ge\ \Omega\!\big(R_{\max}\,H\,\delta\big),\quad \delta=\sup_{i\ne j,(s,a)} D_{\mathrm{TV}}(P_i,P_j)$$`;
+
+const conditions = [
+  { id: 'C1', name: 'Common optimal, off-support', body: 'A shared optimal policy exists and its trajectory avoids the region where kernels disagree.' },
+  { id: 'C2', name: 'Action-preserving optimum', body: 'The optimal action ranking coincides across clients, even when value functions differ.' },
+  { id: 'C3', name: 'Self-revealing environment', body: 'Env identity is inferable from observation history, so the LLM does in-context posterior inference (uniquely powerful for LLMs).' },
+];
+const patterns = [
+  { id: 'A', cls: 'pat-a', title: 'Task-level robust', tag: 'unconditional', desc: 'Curve matches the i.i.d. uniform baseline at every split.', thm: 'Thm 1′' },
+  { id: 'B', cls: 'pat-b', title: 'Env-level robust', tag: 'a (C) holds', desc: 'Tracks the single-env baseline despite Pᵢ ≠ Pⱼ.', thm: 'Recovery Thm' },
+  { id: 'C', cls: 'pat-c', title: 'Degrade but stable', tag: 'partial (C)', desc: 'A stable plateau a finite margin below baseline.', thm: 'slack-bounded' },
+  { id: 'D', cls: 'pat-d', title: 'Collapse', tag: 'all (C) fail', desc: 'Low, oscillating, seed-divergent, with capability forgetting.', thm: 'Thm 2′ floor' },
+];
+---
+<section id="mechanism" class="content-section alt-background">
+  <div class="section-container">
+    <h2 class="section-title">Asymmetric Robustness Mechanism</h2>
+    <p class="section-description">
+      Why is FedAgent robust to task heterogeneity but fragile to environment heterogeneity? The same
+      asymmetry gives a clean theoretical answer.
+    </p>
+
+    <div class="thm-grid">
+      <div class="thm-card robust-card">
+        <h3 class="thm-title"><span class="robustness-text">Task-level: robust</span></h3>
+        <p class="thm-sub">The federated objective <em>collapses</em> to centralized training on the task mixture:</p>
+        <div class="eq-box" set:html={eq_collapse} />
+        <p class="thm-sub">So the per-client gap has <strong>no irreducible floor</strong> (Theorem 1′):</p>
+        <div class="eq-box" set:html={eq_task} />
+        <p class="thm-note robust-note">Every term vanishes as the LLM grows and training proceeds.</p>
+      </div>
+
+      <div class="thm-card fragile-card">
+        <h3 class="thm-title"><span class="fragility-text">Environment-level: non-robust</span></h3>
+        <p class="thm-sub">A transition-swap construction forces any federated optimum to be sub-optimal (Theorem 2′):</p>
+        <div class="eq-box" set:html={eq_env} />
+        <p class="thm-sub">An <strong>irreducible floor</strong> scaling with the inter-environment divergence <em>δ</em>:</p>
+        <p class="thm-note fragile-note">No capacity, samples, training, or optimizer can close it.</p>
+      </div>
+    </div>
+
+    <h3 class="subsection-title">Three Sufficient Conditions to Recover Robustness</h3>
+    <div class="cond-grid">
+      {conditions.map((c) => (
+        <div class="cond-card">
+          <div class="cond-id">{c.id}</div>
+          <div class="cond-name">{c.name}</div>
+          <p class="cond-body">{c.body}</p>
+        </div>
+      ))}
+    </div>
+
+    <h3 class="subsection-title">Four Training-Curve Patterns</h3>
+    <p class="subsection-description">How closely (C1) to (C3) hold places a run on a continuous <strong>stable to degrade to collapse</strong> spectrum, readable straight off the curve.</p>
+    <div class="spectrum-bar">
+      <span class="sb sb-a">stable</span><span class="sb sb-b">recover</span><span class="sb sb-c">degrade</span><span class="sb sb-d">collapse</span>
+    </div>
+    <div class="pattern-grid">
+      {patterns.map((p) => (
+        <div class={`pattern-card ${p.cls}`}>
+          <div class="pattern-letter">{p.id}</div>
+          <div class="pattern-title">{p.title}</div>
+          <div class="pattern-tag">{p.tag}</div>
+          <p class="pattern-desc">{p.desc}</p>
+          <div class="pattern-thm">{p.thm}</div>
+        </div>
+      ))}
+    </div>
+
+    <div class="insight-box">
+      <strong>Key Insight:</strong> Intrinsic robustness to <span class="robustness-text">task heterogeneity</span>,
+      worst-case fragility to <span class="fragility-text">environment heterogeneity</span>, with three
+      structural escape hatches in between.
+    </div>
+  </div>
+</section>
+
+<style>
+  .thm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem; }
+  .thm-card { padding: 1.6rem; border-radius: 12px; border: 2px solid; background: #fff; }
+  .robust-card { border-color: #aed581; background: #f6faf0; }
+  .fragile-card { border-color: #ef9a9a; background: #fdf1f3; }
+  .thm-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.8rem; }
+  .thm-sub { font-size: 0.95rem; color: #555; line-height: 1.55; margin-bottom: 0.5rem; }
+  .thm-sub em { font-style: italic; color: #333; }
+  .thm-sub strong { color: #2a2f6c; }
+  .eq-box { background: #fff; border: 1px solid #e0e4ef; border-radius: 8px; padding: 0.8rem; margin-bottom: 0.9rem; text-align: center; overflow-x: auto; font-size: 0.95rem; }
+  .thm-note { font-size: 0.9rem; font-weight: 600; padding: 0.7rem 0.9rem; border-radius: 8px; margin-top: 0.3rem; }
+  .robust-note { color: #2e7d32; background: #eef6e6; }
+  .fragile-note { color: #c62828; background: #fbe6e9; }
+
+  .robustness-text { color: #2e7d32; font-weight: 700; }
+  .fragility-text { color: #c62828; font-weight: 700; }
+
+  .subsection-title { font-size: 1.4rem; font-weight: 700; color: #2a2f6c; text-align: center; margin: 2.5rem 0 1.2rem; }
+  .subsection-description { text-align: center; color: #555; font-size: 1rem; margin-bottom: 1.4rem; max-width: 760px; margin-left: auto; margin-right: auto; }
+  .subsection-description strong { color: #2a2f6c; }
+
+  .cond-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .cond-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 1.3rem; box-shadow: 0 3px 12px rgba(0,0,0,0.05); }
+  .cond-id { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: #eef2ff; color: #4a56c9; font-weight: 800; font-size: 1.05rem; margin-bottom: 0.7rem; }
+  .cond-name { font-size: 1.05rem; font-weight: 700; color: #2a2f6c; margin-bottom: 0.4rem; }
+  .cond-body { font-size: 0.92rem; color: #555; line-height: 1.55; }
+
+  .spectrum-bar { display: flex; max-width: 760px; margin: 0 auto 1.4rem; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .sb { flex: 1; text-align: center; padding: 0.5rem 0.3rem; font-size: 0.82rem; font-weight: 700; color: #fff; }
+  .sb-a { background: #2e9e6a; } .sb-b { background: #6cbf6c; } .sb-c { background: #e0a93a; } .sb-d { background: #d2564a; }
+
+  .pattern-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  .pattern-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 1.2rem; text-align: center; border-top: 4px solid #ccc; }
+  .pat-a { border-top-color: #2e9e6a; } .pat-b { border-top-color: #6cbf6c; } .pat-c { border-top-color: #e0a93a; } .pat-d { border-top-color: #d2564a; }
+  .pattern-letter { font-size: 1.8rem; font-weight: 800; color: #2a2f6c; line-height: 1; }
+  .pattern-title { font-size: 1rem; font-weight: 700; color: #333; margin-top: 0.4rem; }
+  .pattern-tag { font-size: 0.78rem; color: #888; font-style: italic; margin-bottom: 0.5rem; }
+  .pattern-desc { font-size: 0.86rem; color: #555; line-height: 1.5; min-height: 3.6em; }
+  .pattern-thm { margin-top: 0.6rem; font-size: 0.78rem; font-weight: 700; color: #4a56c9; font-family: 'Courier New', monospace; }
+
+  .insight-box { background: linear-gradient(135deg, #f5f7ff, #eef2ff); border: 2px solid #c5cae9; border-radius: 10px; padding: 1.25rem 1.5rem; font-size: 1.05rem; line-height: 1.6; text-align: center; margin-top: 2.5rem; }
+
+  @media (max-width: 768px) {
+    .thm-grid { grid-template-columns: 1fr; }
+    .cond-grid { grid-template-columns: 1fr; }
+    .pattern-grid { grid-template-columns: 1fr 1fr; }
+    .pattern-desc { min-height: 0; }
+  }
+</style>

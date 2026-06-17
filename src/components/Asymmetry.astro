@@ -1,0 +1,84 @@
+---
+// Asymmetry.astro: the Input-Dynamics Asymmetry (original visual idiom)
+const fact = String.raw`The task descriptor $\tau$ enters the policy through its <b>input channel</b> (the prompt); the transition kernel $P$ does <b>not</b>: the policy senses $P$ only through the successor states $s_{t+1}\sim P(\cdot\mid s_t,a_t)$ that arise after it acts.`;
+---
+<section id="asymmetry" class="content-section">
+  <div class="section-container">
+    <h2 class="section-title">Input-Dynamics Asymmetry</h2>
+    <p class="section-description">
+      One architectural fact about LLM agents drives the entire story, and it cuts two ways.
+    </p>
+
+    <div class="fact-box">
+      <span class="fact-tag">The fact</span>
+      <p class="fact-text" set:html={fact} />
+    </div>
+
+    <div class="consequence-grid">
+      <div class="cons-card robust-card">
+        <div class="cons-head"><span class="cons-icon">✓</span> <span class="robustness-text">Task is observable</span></div>
+        <p>
+          Because <em>τ</em> is in the input, a single model can encode different behaviors for different
+          prompts, exactly what instruction-tuned LLMs already do. Clients teach
+          <strong>complementary</strong> pieces of the task-conditional map, so their gradients add up.
+        </p>
+        <div class="cons-foot robust-foot">⇒ robust to task-level heterogeneity</div>
+      </div>
+
+      <div class="cons-card fragile-card">
+        <div class="cons-head"><span class="cons-icon">!</span> <span class="fragility-text">Environment is implicit</span></div>
+        <p>
+          Because <em>P</em> is hidden in the dynamics, no single model can switch worlds: when
+          <em>P₁ ≠ P₂</em> at the same state, the policy must commit to one action that is wrong in the other.
+          Conflicting gradients pull the <strong>same</strong> weights apart.
+        </p>
+        <div class="cons-foot fragile-foot">⇒ worst-case fragile to environment-level heterogeneity</div>
+      </div>
+    </div>
+
+    <div class="overview-figure">
+      <img src="/figures/mechanism_overview.png" alt="Overview: task observable to the policy (robust), environment implicit (brittle); task-level vs environment-level heterogeneity." loading="lazy" />
+      <p class="figure-caption">
+        What the policy can <span class="robustness-text">observe</span> (the task) is absorbed;
+        what it <span class="fragility-text">cannot directly see</span> (the environment) is where federation can break.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .fact-box {
+    max-width: 860px; margin: 0 auto 2.2rem; background: #f8f9fc;
+    border: 1px solid #e0e4ef; border-left: 5px solid #4a56c9; border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+  }
+  .fact-tag { display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #4a56c9; margin-bottom: 0.6rem; }
+  .fact-text { font-size: 1.2rem; line-height: 1.55; color: #2a2f6c; }
+  .fact-text :global(b) { font-weight: 700; }
+
+  .consequence-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 950px; margin: 0 auto 2.5rem; }
+  .cons-card { padding: 1.5rem; border-radius: 12px; border: 2px solid; }
+  .robust-card { background: #f1f8e9; border-color: #aed581; }
+  .fragile-card { background: #fce4ec; border-color: #ef9a9a; }
+  .cons-head { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.5rem; }
+  .cons-icon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 0.9rem; color: #fff; }
+  .robust-card .cons-icon { background: #2e7d32; }
+  .fragile-card .cons-icon { background: #c62828; }
+  .cons-card p { font-size: 0.98rem; line-height: 1.6; color: #444; }
+  .cons-card p em { font-style: normal; font-family: 'Courier New', monospace; font-weight: 600; color: #2a2f6c; }
+  .cons-foot { margin-top: 1rem; font-weight: 700; font-size: 0.95rem; }
+  .robust-foot { color: #2e7d32; }
+  .fragile-foot { color: #c62828; }
+
+  .robustness-text { color: #2e7d32; font-weight: 700; }
+  .fragility-text { color: #c62828; font-weight: 700; }
+
+  .overview-figure { text-align: center; max-width: 1000px; margin: 0 auto; }
+  .overview-figure img { max-width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.10); }
+  .figure-caption { margin-top: 1rem; font-size: 0.95rem; color: #555; line-height: 1.6; max-width: 760px; margin-left: auto; margin-right: auto; }
+
+  @media (max-width: 768px) {
+    .consequence-grid { grid-template-columns: 1fr; }
+    .fact-text { font-size: 1.05rem; }
+  }
+</style>

@@ -1,10 +1,17 @@
 ---
 // AuthorsCitation.astro - Citation section for FedAgent
+const bibtex = `@article{chen2026fedagent,
+  title   = {Is Decentralized LLM Agent RL Robust to Heterogeneity? An Asymmetric Tale},
+  author  = {Chen, Canyu and Zhu, Kangyu and Chen, Zhaorun and Zhou, Zhanhui and
+             Diao, Shizhe and Lu, Yiping and Li, Tian and Li, Manling and Song, Dawn},
+  journal = {arXiv preprint},
+  year    = {2026},
+  url     = {https://fed-agent.github.io/}
+}`;
 ---
-<section id="citation" class="content-section">
+<section id="citation" class="content-section alt-background">
   <div class="section-container">
     <h2 class="section-title">Citation</h2>
-
     <div class="citation-section">
       <p>If you find our work useful in your research, please cite:</p>
       <div class="citation-block">
@@ -18,14 +25,10 @@
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </button>
-          <pre><code>{`@article{chen2026fedagent,
-  title={Federated Agent Reinforcement Learning},
-  author={Canyu Chen and Kangyu Zhu and Zhaorun Chen and Zhanhui Zhou and Shizhe Diao and Yiping Lu and Tian Li and Manling Li and Dawn Song},
-  year={2026},
-  journal={arXiv preprint},
-}`}</code></pre>
+          <pre><code>{bibtex}</code></pre>
         </div>
       </div>
+      <p class="cite-contact">Questions or collaboration: <a href="https://canyuchen.com/" target="_blank">Canyu Chen</a> · <a href="https://github.com/canyuchen/fedagent" target="_blank">github.com/canyuchen/fedagent</a></p>
     </div>
   </div>
 </section>
@@ -33,26 +36,24 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const copyButton = document.getElementById('copy-button');
-    const codeElement = document.querySelector('.citation-block pre code');
-
+    const codeElement = document.querySelector('#citation .citation-block pre code');
     if (copyButton && codeElement) {
       copyButton.addEventListener('click', async () => {
-        const citationText = codeElement.textContent || '';
-
         try {
-          await navigator.clipboard.writeText(citationText);
+          await navigator.clipboard.writeText(codeElement.textContent || '');
           copyButton.classList.add('copied');
-          setTimeout(() => {
-            copyButton.classList.remove('copied');
-          }, 2000);
+          setTimeout(() => copyButton.classList.remove('copied'), 2000);
         } catch (err) {
-          console.error('Failed to copy: ', err);
           copyButton.classList.add('copy-error');
-          setTimeout(() => {
-            copyButton.classList.remove('copy-error');
-          }, 2000);
+          setTimeout(() => copyButton.classList.remove('copy-error'), 2000);
         }
       });
     }
   });
 </script>
+
+<style>
+  .citation-section { text-align: center; }
+  .citation-section > p { font-size: 1.1rem; color: var(--text-light, #555); margin-bottom: 1rem; }
+  .cite-contact { margin-top: 1.4rem; font-size: 0.95rem; color: #555; }
+</style>

@@ -1,0 +1,94 @@
+---
+// Method.astro: the FedAgent algorithm + accurate decentralized configuration
+const lines = {
+  req1: String.raw`<strong>Require:</strong> total clients $N$, rounds $T$, clients-per-round $M$, local epochs $E$, learning rate $\eta$`,
+  req2: String.raw`<strong>Ensure:</strong> final global policy parameters $\theta_{\mathrm{final}}$`,
+  l1: String.raw`1: Initialize global policy parameters $\theta_0$ (an LLM)`,
+  l2: String.raw`2: <strong>for</strong> $t = 0$ <strong>to</strong> $T{-}1$ <strong>do</strong>`,
+  l3: String.raw`3: &nbsp;&nbsp;<span class="server-color"><strong>Server:</strong></span> sample $S_t \subset [N]$ with $|S_t|=M$ (uniform, w/o replacement)`,
+  l4: String.raw`4: &nbsp;&nbsp;<span class="server-color"><strong>Server:</strong></span> broadcast $\theta_t$ to all $i \in S_t$`,
+  l5: String.raw`5: &nbsp;&nbsp;<strong>for each</strong> $i \in S_t$ <strong>in parallel do</strong>`,
+  l6: String.raw`6: &nbsp;&nbsp;&nbsp;&nbsp;$\theta_{i,t,0} \gets \theta_t$`,
+  l7: String.raw`7: &nbsp;&nbsp;&nbsp;&nbsp;<strong>for</strong> $e = 0$ <strong>to</strong> $E{-}1$ <strong>do</strong>`,
+  l8: String.raw`8: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Collect trajectories $B_{i,t,e}$ with $\pi_{\theta_{i,t,e}}$ in $\mathcal{M}_i$`,
+  l9: String.raw`9: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estimate policy gradient $g_{i,t,e}$ from $B_{i,t,e}$ <span class="algo-comment">(GRPO or PPO)</span>`,
+  l10: String.raw`10: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Local update $\theta_{i,t,e+1} \gets \theta_{i,t,e} + \eta\, g_{i,t,e}$`,
+  l12: String.raw`12: &nbsp;&nbsp;&nbsp;&nbsp;Client returns $\theta_{i,t,E}$ <span class="algo-comment">(only parameters cross the boundary)</span>`,
+  l14: String.raw`14: &nbsp;&nbsp;<span class="server-color"><strong>Server:</strong></span> model averaging (FedAvg):`,
+  agg: String.raw`$$\theta_{t+1} \gets \tfrac{1}{M}\sum_{i \in S_t} \theta_{i,t,E}$$`,
+  l16: String.raw`16: <strong>return</strong> $\theta_{\mathrm{final}} \gets \theta_T$`,
+};
+---
+<section id="method" class="content-section alt-background">
+  <div class="section-container">
+    <h2 class="section-title">The FedAgent Algorithm</h2>
+    <p class="section-description">
+      FedAgent follows the classic <strong>FedAvg</strong> skeleton of sample, broadcast, local update, and
+      average, but replaces supervised SGD with <strong>policy-gradient RL on LLM-induced policies</strong>.
+      Each client optimizes on its own task-augmented MDP; only model parameters ever leave the device.
+    </p>
+
+    <div class="algorithm-block">
+      <div class="algorithm-header">Algorithm 1: FedAgent with <span class="client-color">Client</span> and <span class="server-color">Server</span> training</div>
+      <div class="algorithm-body">
+        <div class="algo-line requirement" set:html={lines.req1} />
+        <div class="algo-line requirement" set:html={lines.req2} />
+        <div class="algo-line" set:html={lines.l1} />
+        <div class="algo-line" set:html={lines.l2} />
+        <div class="algo-line indent-1 server-block" set:html={lines.l3} />
+        <div class="algo-line indent-1 server-block" set:html={lines.l4} />
+        <div class="algo-group client-group">
+          <div class="algo-line indent-1" set:html={lines.l5} />
+          <div class="algo-line indent-2" set:html={lines.l6} />
+          <div class="algo-line indent-2" set:html={lines.l7} />
+          <div class="algo-line indent-3" set:html={lines.l8} />
+          <div class="algo-line indent-3" set:html={lines.l9} />
+          <div class="algo-line indent-3" set:html={lines.l10} />
+          <div class="algo-line indent-2">11: &nbsp;&nbsp;&nbsp;&nbsp;<strong>end for</strong></div>
+          <div class="algo-line indent-2" set:html={lines.l12} />
+          <div class="algo-line indent-1">13: &nbsp;&nbsp;<strong>end for</strong></div>
+        </div>
+        <div class="algo-group server-group">
+          <div class="algo-line indent-1" set:html={lines.l14} />
+          <div class="algo-line indent-2 algo-math" set:html={lines.agg} />
+        </div>
+        <div class="algo-line">15: <strong>end for</strong></div>
+        <div class="algo-line" set:html={lines.l16} />
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .algorithm-block { max-width: 820px; margin: 0 auto 2.5rem; background: #fff; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e0e0e0; }
+  .algorithm-header { background: linear-gradient(135deg, #2a2f6c, #3a4b8e); color: #fff; padding: 0.85rem 1.25rem; font-weight: 700; font-size: 1rem; }
+  .algorithm-body { padding: 1.25rem 1.5rem; font-family: 'Inter', sans-serif; font-size: 0.92rem; line-height: 2; }
+  .algo-line { margin-bottom: 0.1rem; }
+  .algo-line.requirement { margin-bottom: 0.5rem; color: #555; }
+  .indent-1 { padding-left: 1.5rem; } .indent-2 { padding-left: 3rem; } .indent-3 { padding-left: 4.5rem; }
+  .algo-comment { color: #888; font-size: 0.85em; }
+  .algo-math { padding: 0.25rem 0; }
+  .client-color { color: #e07c5a; font-weight: 600; }
+  .server-color { color: #5a8de0; font-weight: 600; }
+  .client-group { border-left: 3px solid #e07c5a; margin: 0.5rem 0; padding-left: 0.5rem; background: rgba(224,124,90,0.04); border-radius: 0 6px 6px 0; }
+  .server-group { border-left: 3px solid #5a8de0; margin: 0.5rem 0; padding-left: 0.5rem; background: rgba(90,141,224,0.04); border-radius: 0 6px 6px 0; }
+
+  .subsection-title { font-size: 1.4rem; font-weight: 700; color: #2a2f6c; text-align: center; margin-bottom: 0.6rem; }
+  .subsection-description { text-align: center; color: #555; font-size: 1rem; margin-bottom: 1.6rem; max-width: 720px; margin-left: auto; margin-right: auto; }
+  .subsection-description em { font-style: normal; font-weight: 700; color: #2a2f6c; }
+
+  .config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 900px; margin: 0 auto; }
+  .config-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 1.1rem 1.2rem; box-shadow: 0 3px 12px rgba(0,0,0,0.05); }
+  .config-label { font-size: 0.8rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+  .config-value { font-size: 1.35rem; font-weight: 800; color: #2a2f6c; margin: 0.2rem 0 0.4rem; }
+  .config-note { font-size: 0.85rem; color: #666; line-height: 1.45; }
+  .config-foot { text-align: center; max-width: 820px; margin: 1.6rem auto 0; font-size: 0.92rem; color: #666; line-height: 1.7; }
+  .config-foot strong { color: #2a2f6c; }
+
+  @media (max-width: 768px) {
+    .algorithm-body { padding: 1rem; font-size: 0.82rem; overflow-x: auto; }
+    .indent-3 { padding-left: 3rem; }
+    .config-grid { grid-template-columns: 1fr; }
+  }
+</style>
