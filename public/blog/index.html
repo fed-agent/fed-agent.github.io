@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#2a2f6c" />
+<title>An Asymmetric Tale — When Does Federated Training of AI Agents Break? · FedAgent</title>
+<meta name="description" content="An accessible, interactive walkthrough of FedAgent: federated training of LLM agents is provably robust to task-level heterogeneity but worst-case fragile to environment-level heterogeneity — explained by one Input-Dynamics Asymmetry. Play with the real training curves." />
+<link rel="icon" type="image/png" href="/logo.png" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="article" />
+<meta property="og:title" content="An Asymmetric Tale: When Does Federated Training of AI Agents Break?" />
+<meta property="og:description" content="One simple asymmetry decides whether federated agent training is free or impossible. An interactive explainer with the paper's real data." />
+<meta property="og:image" content="/figures/mechanism_overview.png" />
+<meta property="og:url" content="https://fed-agent.github.io/blog/" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+
+<style>
+:root{
+  --indigo:#2a2f6c; --indigo-2:#4a56c9; --indigo-deep:#1d2148;
+  --bg:#f0f3f8; --card:#ffffff; --line:#e7eaf3; --line-soft:#eef1f7;
+  --ink:#23262f; --ink-soft:#454a5a; --muted:#6b7186; --muted-2:#9aa0b4;
+  --good:#2e7d32; --good-bg:#eaf5ea; --good-line:#cfe6cf;
+  --bad:#c0392b; --bad-bg:#fdecea; --bad-line:#f3cfca;
+  --grey:#9aa0b4;
+  --shadow:0 4px 20px rgba(31,38,80,.07); --shadow-sm:0 2px 10px rgba(31,38,80,.05);
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink); background:var(--bg); line-height:1.5;
+  overflow-x:hidden;
+}
+::selection{background:#d9deff;color:var(--indigo-deep)}
+
+/* reading progress */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--indigo),var(--indigo-2));z-index:200;transition:width .08s linear}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.86);backdrop-filter:saturate(160%) blur(10px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1080px;margin:0 auto;padding:.7rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;color:var(--ink);font-weight:700;font-size:1rem}
+.brand img{height:26px;width:auto;display:block}
+.brand .home-ar{color:var(--muted);font-weight:600;margin-right:.1rem;transition:transform .2s}
+.brand:hover .home-ar{transform:translateX(-3px)}
+.topnav{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap}
+.topnav a{display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;color:var(--ink-soft);font-size:.9rem;font-weight:500;padding:.4rem .7rem;border-radius:8px;transition:background .18s,color .18s}
+.topnav a:hover{background:#eef1f9;color:var(--indigo)}
+.topnav a.primary{color:var(--indigo);font-weight:600}
+
+/* layout */
+.wrap{max-width:900px;margin:0 auto;padding:0 1.2rem}
+.wide{max-width:940px}
+article{padding:2.4rem 0 4rem}
+
+/* header block */
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--indigo-2);background:#e9ecfb;padding:.35rem .8rem;border-radius:30px}
+h1.title{font-size:2.65rem;line-height:1.12;font-weight:800;letter-spacing:-.02em;color:var(--indigo-deep);margin:1.1rem 0 .7rem}
+.subtitle{font-size:1.2rem;color:var(--muted);font-weight:500;line-height:1.5}
+.byline{display:flex;flex-wrap:wrap;gap:.5rem 1.1rem;align-items:center;margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--line);font-size:.9rem;color:var(--muted)}
+.byline b{color:var(--ink-soft);font-weight:600}
+.byline a{color:var(--indigo-2);text-decoration:none}
+.byline a:hover{text-decoration:underline}
+
+/* prose */
+.prose{font-size:1.12rem;line-height:1.75;color:#2c2f3a}
+.prose > p{margin:1.15rem 0}
+.prose h2{font-size:1.7rem;font-weight:750;letter-spacing:-.01em;color:var(--indigo-deep);margin:3.2rem 0 .4rem;line-height:1.2}
+.prose h2 .num{color:var(--indigo-2);font-weight:800;margin-right:.5rem;font-variant-numeric:tabular-nums}
+.prose h3{font-size:1.18rem;font-weight:700;color:var(--ink);margin:2rem 0 .3rem}
+.prose .dek{color:var(--muted);font-size:1.02rem;margin:.2rem 0 1.1rem}
+.prose strong{color:var(--ink);font-weight:700}
+.prose em{color:#3a3e4d}
+.prose a{color:var(--indigo-2);text-decoration:none;border-bottom:1px solid #c9cef0}
+.prose a:hover{border-bottom-color:var(--indigo-2)}
+.lede{font-size:1.28rem;line-height:1.6;color:var(--ink-soft);font-weight:450}
+.lede .drop{float:left;font-size:3.6rem;line-height:.82;font-weight:800;color:var(--indigo);margin:.18rem .55rem 0 0}
+
+/* tldr */
+.tldr{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--indigo);border-radius:12px;padding:1.1rem 1.3rem;margin:2rem 0;box-shadow:var(--shadow-sm)}
+.tldr h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--indigo-2);margin-bottom:.6rem}
+.tldr ul{list-style:none;display:grid;gap:.55rem}
+.tldr li{position:relative;padding-left:1.6rem;font-size:1rem;color:var(--ink-soft);line-height:1.5}
+.tldr li i{position:absolute;left:0;top:.2rem;color:var(--indigo-2);font-size:.9rem}
+
+/* primer */
+.primer{background:#f4f6ff;border:1px solid #e1e6fb;border-radius:14px;padding:1.25rem 1.4rem;margin:2rem 0}
+.primer h4{font-size:1.02rem;font-weight:700;color:var(--indigo-deep);margin-bottom:.95rem;display:flex;gap:.55rem;align-items:baseline;line-height:1.4}
+.primer h4 i{color:var(--indigo-2);flex:none}
+.primer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem}
+.primer-card{font-size:.95rem;line-height:1.55;color:var(--ink-soft)}
+.primer-card b{color:var(--ink)}
+.primer-card .pk{display:block;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--indigo-2);margin-bottom:.32rem}
+@media(max-width:680px){.primer-grid{grid-template-columns:1fr;gap:.85rem}}
+
+/* figure image */
+.fig-img{width:100%;max-width:600px;height:auto;display:block;margin:.2rem auto 0}
+
+/* callouts */
+.callout{border-radius:12px;padding:1.15rem 1.35rem;margin:1.8rem 0;font-size:1.05rem;line-height:1.6}
+.callout p{margin:.4rem 0}
+.callout .tag{display:block;font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.45rem}
+.c-good{background:var(--good-bg);border:1px solid var(--good-line);color:#1f5723}
+.c-good .tag{color:var(--good)}
+.c-bad{background:var(--bad-bg);border:1px solid var(--bad-line);color:#8e2b20}
+.c-bad .tag{color:var(--bad)}
+.c-aha{background:linear-gradient(135deg,#2a2f6c,#3d4aa0);color:#eef0ff;box-shadow:var(--shadow)}
+.c-aha .tag{color:#aab2ff}
+.c-aha strong{color:#fff}
+.c-aha .big{font-size:1.32rem;font-weight:700;line-height:1.45;color:#fff;margin:.3rem 0}
+
+/* figure / diagram cards */
+.fig{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem;margin:2rem 0;box-shadow:var(--shadow)}
+.figcap{font-size:.9rem;color:var(--muted);text-align:center;margin-top:1rem;line-height:1.5}
+.figcap b{color:var(--ink-soft)}
+
+/* store diagram */
+.stores-goal{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;justify-content:center;margin-bottom:1.2rem;font-size:.98rem}
+.chip{display:inline-flex;align-items:center;gap:.45rem;padding:.45rem .85rem;border-radius:30px;font-weight:600;font-size:.92rem}
+.chip-goal{background:#eef0ff;color:var(--indigo)}
+.chip-act{background:#23262f;color:#e9ebf4;font-family:'Menlo',monospace;font-size:.84rem}
+.arrow-r{color:var(--muted-2);font-size:1.1rem}
+.stores{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem}
+.store{border:1.5px solid;border-radius:12px;padding:1rem;text-align:center;background:#fcfdff}
+.store .nm{font-weight:700;font-size:.95rem;margin-bottom:.5rem}
+.store .res{font-size:1.55rem;font-weight:800;line-height:1}
+.store .sub{font-size:.82rem;color:var(--muted);margin-top:.35rem}
+.store.a{border-color:var(--good-line)} .store.a .nm{color:var(--good)} .store.a .res{color:var(--good)}
+.store.b{border-color:#ecd6a6} .store.b .nm{color:#b6862a} .store.b .res{color:#cf9a2e}
+.store.c{border-color:var(--bad-line)} .store.c .nm{color:var(--bad)} .store.c .res{color:var(--bad)}
+
+/* two-channel asymmetry diagram */
+.channels{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:.4rem;text-align:center}
+.cnode{border-radius:12px;padding:1rem .8rem;font-weight:650}
+.cnode .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;opacity:.7;font-weight:700;margin-bottom:.25rem}
+.cnode .big{font-size:1.05rem}
+.cnode.task{background:#eaf5ea;border:1.5px solid var(--good-line);color:#1f5723}
+.cnode.agent{background:#eef0ff;border:1.5px solid #cdd3f4;color:var(--indigo-deep)}
+.cnode.env{background:#fdecea;border:1.5px solid var(--bad-line);color:#8e2b20}
+.carrow{display:flex;flex-direction:column;align-items:center;gap:.2rem;min-width:78px}
+.carrow .a{font-size:1.5rem;line-height:1}
+.carrow .t{font-size:.7rem;font-weight:700;letter-spacing:.03em}
+.carrow.explicit .a{color:var(--good)} .carrow.explicit .t{color:var(--good)}
+.carrow.implicit .a{color:var(--bad)} .carrow.implicit .t{color:var(--bad)}
+
+/* widgets */
+.widget{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin:2.2rem 0;overflow:hidden}
+.w-head{padding:1.1rem 1.3rem .2rem}
+.w-kicker{font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo-2)}
+.w-title{font-size:1.18rem;font-weight:700;color:var(--ink);margin:.25rem 0 .15rem}
+.w-hint{font-size:.9rem;color:var(--muted)}
+.w-hint i{color:var(--indigo-2);margin-right:.3rem}
+.controls{display:flex;flex-wrap:wrap;gap:.7rem 1.2rem;align-items:center;padding:.9rem 1.3rem;border-bottom:1px solid var(--line-soft);background:#fbfcfe}
+.ctl{display:flex;align-items:center;gap:.55rem}
+.ctl-lbl{font-size:.82rem;font-weight:600;color:var(--muted)}
+.seg{display:inline-flex;background:#eef1f7;border-radius:30px;padding:3px}
+.seg button{border:0;background:transparent;cursor:pointer;font:600 .84rem 'Inter';color:#566;padding:.38rem .85rem;border-radius:30px;transition:all .15s;white-space:nowrap}
+.seg button:hover{color:var(--indigo)}
+.seg button.active{background:var(--indigo);color:#fff}
+.switch{display:inline-flex;align-items:center;gap:.6rem;cursor:pointer;user-select:none}
+.switch input{display:none}
+.track{width:46px;height:26px;border-radius:30px;background:#cfd4e6;position:relative;transition:background .2s}
+.track::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch input:checked + .track{background:var(--indigo)}
+.switch input:checked + .track::after{transform:translateX(20px)}
+.switch .s-txt{font-size:.86rem;font-weight:600;color:var(--ink-soft)}
+.slider-wrap{display:flex;align-items:center;gap:.9rem;flex:1;min-width:230px}
+.slider-wrap input[type=range]{flex:1;accent-color:var(--indigo);height:4px}
+.sev-name{font-size:.86rem;font-weight:700;min-width:122px;text-align:right}
+.chart-box{position:relative;height:340px;padding:1rem 1.1rem 1.2rem}
+.readout{display:flex;flex-wrap:wrap;gap:1.4rem;align-items:baseline;padding:0 1.3rem 1.1rem}
+.stat{display:flex;flex-direction:column;gap:.1rem}
+.stat .v{font-size:1.7rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.stat .k{font-size:.78rem;color:var(--muted);font-weight:600}
+.stat.good .v{color:var(--good)} .stat.bad .v{color:var(--bad)} .stat.neu .v{color:var(--indigo)}
+.readnote{flex:1;min-width:200px;font-size:.92rem;color:var(--ink-soft);line-height:1.5;align-self:center}
+.readnote.warn{color:#8e2b20}
+
+/* math box */
+details.mathbox{background:#f7f8fc;border:1px solid var(--line);border-radius:12px;margin:1.8rem 0;overflow:hidden}
+details.mathbox summary{cursor:pointer;padding:.85rem 1.1rem;font-weight:650;font-size:.95rem;color:var(--indigo);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.mathbox summary::-webkit-details-marker{display:none}
+details.mathbox summary i{transition:transform .2s;font-size:.8rem}
+details.mathbox[open] summary i{transform:rotate(90deg)}
+details.mathbox .mb-body{padding:.2rem 1.2rem 1.1rem;font-size:1.02rem;line-height:1.7;color:var(--ink-soft)}
+details.mathbox .mb-body p{margin:.7rem 0}
+
+/* spectrum */
+.spectrum{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-radius:10px;overflow:hidden;margin:1.4rem 0 .3rem;border:1px solid var(--line)}
+.sp{padding:.8rem .6rem;text-align:center;color:#fff}
+.sp .h{font-size:.95rem;font-weight:750}
+.sp .d{font-size:.78rem;opacity:.92;margin-top:.15rem;line-height:1.3}
+.sp0{background:#2e9e6a} .sp1{background:#6cbf6c;color:#1f3d20} .sp2{background:#e0a93a;color:#4a3206} .sp3{background:#d2564a}
+
+/* takeaways */
+.takeaways{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.8rem 0}
+.tk{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.2rem;box-shadow:var(--shadow-sm)}
+.tk i{font-size:1.4rem;color:var(--indigo-2)}
+.tk h4{font-size:1.05rem;font-weight:700;color:var(--ink);margin:.55rem 0 .35rem}
+.tk p{font-size:.93rem;color:var(--ink-soft);line-height:1.55}
+
+/* footer cta */
+.endcta{background:linear-gradient(135deg,#2a2f6c,#1d2148);border-radius:var(--radius);padding:1.8rem;margin:3rem 0 1rem;text-align:center;color:#dfe3ff}
+.endcta h3{color:#fff;font-size:1.35rem;font-weight:750;margin-bottom:.5rem}
+.endcta p{font-size:1rem;opacity:.85;max-width:520px;margin:0 auto 1.2rem}
+.btns{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:600;font-size:.95rem;padding:.65rem 1.3rem;border-radius:30px;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:#fff;color:var(--indigo)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.cite{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin:1.5rem 0;font-size:.86rem;color:var(--ink-soft);line-height:1.6}
+.cite code{font-family:'Menlo',monospace;font-size:.82rem;color:var(--indigo-deep)}
+.foot{text-align:center;color:var(--muted);font-size:.86rem;padding:1.5rem 0 1rem}
+.foot a{color:var(--indigo-2);text-decoration:none}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
+/* responsive */
+@media (max-width:680px){
+  h1.title{font-size:2rem}
+  .subtitle{font-size:1.05rem}
+  .prose{font-size:1.06rem}
+  .lede{font-size:1.14rem}
+  .prose h2{font-size:1.42rem}
+  .stores{grid-template-columns:1fr;gap:.7rem}
+  .channels{grid-template-columns:1fr;gap:.5rem}
+  .carrow{flex-direction:row;min-width:0;padding:.2rem 0}
+  .carrow .a{transform:rotate(90deg)}
+  .takeaways{grid-template-columns:1fr}
+  .spectrum{grid-template-columns:1fr 1fr}
+  .readout{gap:1rem}
+  .stat .v{font-size:1.45rem}
+  .chart-box{height:300px;padding:.6rem .4rem 1rem}
+  .controls{gap:.6rem .9rem}
+  .sev-name{min-width:0;text-align:left}
+  .slider-wrap{min-width:100%}
+}
+</style>
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+<div id="progress"></div>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="/"><span class="home-ar">←</span><img src="/logo.png" alt="" />FedAgent</a>
+    <nav class="topnav">
+      <a href="/" class="primary"><i class="fa-solid fa-house"></i> Project</a>
+      <a href="/pdf/FedAgent.pdf" target="_blank"><i class="fa-solid fa-file-pdf"></i> Paper</a>
+      <a href="https://github.com/canyuchen/fedagent" target="_blank"><i class="fa-brands fa-github"></i> Code</a>
+    </nav>
+  </div>
+</header>
+
+<article>
+<div class="wrap">
+
+  <div class="reveal in">
+    <span class="eyebrow"><i class="fa-solid fa-flask"></i> FedAgent · Explainer</span>
+    <h1 class="title">An Asymmetric Tale: when does federated training of AI agents break?</h1>
+    <p class="subtitle">We wanted to train AI agents on everyone&rsquo;s data without anyone sharing it. Half of that dream is free. The other half hits a wall no amount of compute can climb. Here&rsquo;s the one idea that decides which half you&rsquo;re in &mdash; with the real training curves to play with.</p>
+    <div class="byline">
+      <span><b>FedAgent</b> &middot; MLL Lab &amp; Sunblaze Lab</span>
+      <span><i class="fa-regular fa-clock"></i> ~12 min read</span>
+      <a href="/"><i class="fa-solid fa-arrow-left"></i> Back to the project page</a>
+    </div>
+  </div>
+
+  <div class="prose">
+
+    <p class="lede reveal"><span class="drop">A</span>I agents are escaping the demo. They book your travel, shop for your groceries, file your tickets, and poke around your filesystem. To get good, they learn from interaction &mdash; from the tasks people actually give them and the messes those tasks create. Which raises an awkward problem: <strong>the data you&rsquo;d most want to learn from is the data nobody is willing to hand over.</strong></p>
+
+    <p class="reveal">A hospital won&rsquo;t upload its patient workflows. A household won&rsquo;t stream its daily routines to a server. A retailer won&rsquo;t share its customers&rsquo; purchase histories. Each of them has exactly the experience an agent needs, and a very good reason to keep it local.</p>
+
+    <p class="reveal">There&rsquo;s a well-known answer to this shape of problem: <strong>federated learning</strong>. Don&rsquo;t move the data &mdash; move the model. Every client trains on its own private data, and only the model weights (never the raw interactions) are sent to a server, averaged together, and sent back. Repeat. It worked for predicting the next word on phone keyboards. The question we set out to answer was simple to ask:</p>
+
+    <div class="primer reveal">
+      <h4><i class="fa-solid fa-circle-info"></i> New to this corner of AI? Ninety seconds here, and everything below clicks.</h4>
+      <div class="primer-grid">
+        <div class="primer-card"><span class="pk">An AI agent</span>Software that chases a goal by taking actions and watching what happens &mdash; clicking through a website, steering a household robot. It improves by <b>trial and error</b>: try something, see if it worked, do more of what works. That loop is <em>reinforcement learning</em>.</div>
+        <div class="primer-card"><span class="pk">The model &amp; its weights</span>The agent&rsquo;s &ldquo;brain&rdquo; is really just a giant list of numbers &mdash; its <b>weights</b>. Training nudges those numbers, round after round, until the behavior gets better.</div>
+        <div class="primer-card"><span class="pk">Federated learning</span>The privacy trick: don&rsquo;t collect everyone&rsquo;s data. Each participant trains its own copy at home and sends back only the <b>numbers</b>; a server <b>averages</b> them into one shared model. Data stays home; only the model travels.</div>
+      </div>
+    </div>
+
+    <div class="tldr reveal">
+      <h4><i class="fa-solid fa-bolt"></i> The short version</h4>
+      <ul>
+        <li><i class="fa-solid fa-circle-check"></i> Train separate agents on identical setups, average their models, and you get one as good as if you&rsquo;d pooled all the data in one place. Federation is basically <b>free</b> here.</li>
+        <li><i class="fa-solid fa-circle-half-stroke"></i> Let clients differ in <b>what tasks</b> they do &mdash; even to a wild extreme &mdash; and it <b>still works</b>. Robust.</li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> Let clients differ in <b>which environment</b> they act in, and the same recipe <b>collapses</b> &mdash; against a hard floor that more data or bigger models can&rsquo;t break.</li>
+        <li><i class="fa-solid fa-key"></i> One asymmetry explains all three &mdash; <b>where</b> information enters the agent: the task comes in through the prompt; the environment never does.</li>
+      </ul>
+    </div>
+
+    <h2 class="reveal"><span class="num">1</span>The naive hope</h2>
+    <p class="dek reveal">Train locally, average the weights. Could it really be that easy?</p>
+
+    <p class="reveal">The simplest thing you could try is also the classic one: each client trains its own copy of the agent by trial and error on its own tasks (using a standard RL algorithm &mdash; GRPO or PPO; the choice won&rsquo;t matter until the very end), then ships only the trained <em>numbers</em> to a server. The server averages everyone&rsquo;s numbers into a new shared model and sends it back, and the cycle repeats. No data ever leaves the building. We call the whole setup <strong>FedAgent</strong>.</p>
+
+    <div class="fig reveal">
+      <img class="fig-img" src="/figures/fedagent_framework.png" alt="FedAgent framework: each client runs its own LLM agent interacting with its own environment in a loop; all clients sync their trained models through a central server in the cloud." />
+      <p class="figcap"><b>The whole setup in one picture.</b> Each client (left) runs its own agent practicing inside its own copy of the world &mdash; the little loop where the agent acts and the world reacts. The only thing that ever leaves a client is its trained model; the server in the cloud (right) averages everyone&rsquo;s and sends the blend back. The raw data never moves.</p>
+    </div>
+
+    <p class="reveal">Start in the friendliest possible world: every client is drawing from the <em>same</em> pool of tasks in the <em>same</em> environment. Does an agent stitched together by averaging keep up with one trained the normal way, on all the data pooled together? Drag through the training and see for yourself &mdash; the line is the real success rate (how often the agent actually finishes the task) as training proceeds, on two test-beds: WebShop, a shopping site, and ALFWorld, a simulated household robot.</p>
+
+    <div class="widget reveal" id="w1">
+      <div class="w-head">
+        <div class="w-kicker">Widget 1 &middot; Uniform clients</div>
+        <div class="w-title">Federated vs. centralized training</div>
+        <div class="w-hint"><i class="fa-solid fa-hand-pointer"></i> Flip on the federated curve and hover the lines to read values.</div>
+      </div>
+      <div class="controls">
+        <div class="ctl"><span class="ctl-lbl">Benchmark</span>
+          <div class="seg" id="w1-bench">
+            <button data-v="webshop" class="active">WebShop</button>
+            <button data-v="alfworld">ALFWorld</button>
+          </div>
+        </div>
+        <label class="switch"><input type="checkbox" id="w1-fed"><span class="track"></span><span class="s-txt">Overlay FedAgent</span></label>
+      </div>
+      <div class="chart-box"><canvas id="w1-canvas"></canvas></div>
+      <div class="readout" id="w1-read"></div>
+    </div>
+
+    <p class="reveal">The two lines land on top of each other. Average a handful of independently-trained agents and you get back something as good as the centrally-trained one &mdash; sometimes a touch <em>better</em>, since the averaging smooths the noise. No data was shared to get there.</p>
+
+    <div class="callout c-good reveal">
+      <span class="tag"><i class="fa-solid fa-circle-check"></i> So far, so good</span>
+      <p>I&rsquo;ll be honest: at this point the story felt finished. Training this way just&hellip; works. Ship it.</p>
+    </div>
+
+    <p class="reveal">The catch is hiding in two words: <em>identical clients</em>. Real clients are never identical. The interesting question &mdash; the one this whole post is about &mdash; is what happens when they differ.</p>
+
+    <h2 class="reveal"><span class="num">2</span>But clients aren&rsquo;t twins</h2>
+    <p class="dek reveal">Real clients differ &mdash; and that difference comes in two flavors that behave nothing alike.</p>
+
+    <p class="reveal">Standard federated learning pictures &ldquo;clients differ&rdquo; as one fixed dataset sliced unevenly &mdash; your photos are mostly cats, mine mostly dogs. But an agent doesn&rsquo;t have a fixed dataset. It has a <em>task</em> (what it&rsquo;s asked to do) and a <em>world it acts in</em>. So &ldquo;clients differ&rdquo; &mdash; what researchers call <em>heterogeneity</em> &mdash; splits into two very different things:</p>
+
+    <p class="reveal"><strong>Task-level heterogeneity</strong> &mdash; clients act in the same environment but ask for different things. The power user runs 500 varied tasks; the newcomer runs 15. One household mostly cooks; another mostly tidies. The world responds the same way to everyone; only the <em>requests</em> differ.</p>
+
+    <p class="reveal"><strong>Environment-level heterogeneity</strong> &mdash; clients chase the same goals but the <em>world itself</em> responds differently. Same instruction, same action, different consequences. Picture three shopping clients all told &ldquo;buy a wireless mouse under $30,&rdquo; all issuing the same search:</p>
+
+    <div class="fig reveal">
+      <div class="stores-goal">
+        <span class="chip chip-goal"><i class="fa-solid fa-bullseye"></i> &ldquo;wireless mouse under $30&rdquo;</span>
+        <span class="arrow-r">&rarr;</span>
+        <span class="chip chip-act">search("wireless mouse")</span>
+        <span class="arrow-r">&rarr;</span>
+      </div>
+      <div class="stores">
+        <div class="store a"><div class="nm">Store A</div><div class="res">2</div><div class="sub">results &middot; in budget &check;</div></div>
+        <div class="store b"><div class="nm">Store B</div><div class="res">1</div><div class="sub">result &middot; in budget &check;</div></div>
+        <div class="store c"><div class="nm">Store C</div><div class="res">0</div><div class="sub">results &middot; dead end &cross;</div></div>
+      </div>
+      <p class="figcap"><b>Same goal. Same action. Three different worlds.</b> The agent&rsquo;s instruction is identical across clients &mdash; what changes is how each store&rsquo;s catalog and ranking respond to it.</p>
+    </div>
+
+    <p class="reveal">These feel like two flavors of the same &ldquo;clients differ&rdquo; problem. They are not. One of them federation shrugs off. The other breaks it. Let&rsquo;s push on each.</p>
+
+    <h2 class="reveal"><span class="num">3</span>The asymmetric tale</h2>
+    <p class="dek reveal">Crank up each kind of difference and watch what the training curves do.</p>
+
+    <h3 class="reveal">First, task heterogeneity &mdash; turned up to the extreme</h3>
+    <p class="reveal">We can dial task differences with a single knob, all the way to a deliberately pathological split: each client does <em>almost only one kind of task</em>, or holds a tiny sliver of the task space, or sees only easy (or only impossible) problems. Surely <em>that</em> breaks the averaging trick. Toggle the extreme split on and compare it to the near-uniform baseline:</p>
+
+    <div class="widget reveal" id="w2">
+      <div class="w-head">
+        <div class="w-kicker">Widget 2 &middot; Task-level heterogeneity</div>
+        <div class="w-title">Push the split to the extreme &mdash; does it collapse?</div>
+        <div class="w-hint"><i class="fa-solid fa-hand-pointer"></i> Pick an axis, then flip &ldquo;Extreme split&rdquo; on and watch where the bold line lands.</div>
+      </div>
+      <div class="controls">
+        <div class="ctl"><span class="ctl-lbl">Axis</span>
+          <div class="seg" id="w2-axis">
+            <button data-v="preference" class="active">Preference</button>
+            <button data-v="coverage">Coverage</button>
+            <button data-v="hardness">Hardness</button>
+          </div>
+        </div>
+        <div class="ctl"><span class="ctl-lbl">Benchmark</span>
+          <div class="seg" id="w2-bench">
+            <button data-v="webshop" class="active">WebShop</button>
+            <button data-v="alfworld">ALFWorld</button>
+          </div>
+        </div>
+        <label class="switch"><input type="checkbox" id="w2-ex"><span class="track"></span><span class="s-txt">Extreme split</span></label>
+      </div>
+      <div class="chart-box"><canvas id="w2-canvas"></canvas></div>
+      <div class="readout" id="w2-read"></div>
+    </div>
+
+    <p class="reveal">It doesn&rsquo;t collapse. The extreme-split curve tracks the near-uniform one the whole way &mdash; on some axes it even finishes <em>higher</em>. Whether clients differ in what they prefer, how much they&rsquo;ve seen, or how hard their tasks are, the averaged agent learns fine. This is the good-news half, and the paper proves it&rsquo;s not luck: when clients differ only in their tasks, training the federated way and pooling all the data are <em>the same problem</em> in disguise. Robustness here isn&rsquo;t earned &mdash; it&rsquo;s the default.</p>
+
+    <h3 class="reveal">Now, environment heterogeneity &mdash; the same knob, a very different result</h3>
+    <p class="reveal">Same federated recipe. This time we keep the tasks identical across clients and instead change <em>how the world itself behaves</em> &mdash; five escalating ways to make the WebShop store respond differently to the same actions (splitting the catalog, hiding product fields, re-ordering search results, slipping in near-duplicate look-alikes, scrambling the ranking). Step the severity up and watch the ceiling fall:</p>
+
+    <div class="widget reveal" id="w3">
+      <div class="w-head">
+        <div class="w-kicker">Widget 3 &middot; Environment-level heterogeneity</div>
+        <div class="w-title">The stable &rarr; degrade &rarr; collapse spectrum</div>
+        <div class="w-hint"><i class="fa-solid fa-hand-pointer"></i> Drag the severity slider to add harder environment shifts &mdash; then switch the training algorithm between GRPO and PPO.</div>
+      </div>
+      <div class="controls">
+        <div class="ctl"><span class="ctl-lbl">Algorithm</span>
+          <div class="seg" id="w3-opt">
+            <button data-v="grpo" class="active">GRPO</button>
+            <button data-v="ppo">PPO</button>
+          </div>
+        </div>
+        <div class="slider-wrap">
+          <span class="ctl-lbl">Severity</span>
+          <input type="range" id="w3-sev" min="0" max="5" step="1" value="5" />
+          <span class="sev-name" id="w3-sevname"></span>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="w3-canvas"></canvas></div>
+      <div class="readout" id="w3-read"></div>
+    </div>
+
+    <p class="reveal">Under GRPO the lines fan out and slide down a clean ladder &mdash; from the <b>60%</b> ceiling to <b>44%</b>, <b>34%</b>, <b>15%</b>, and finally <b>~11%</b>, where the agent has essentially stopped learning. Same algorithm that breezed through extreme task heterogeneity, now coming apart. One kind of difference was free. The other is, in the worst case, fatal.</p>
+
+    <div class="spectrum reveal">
+      <div class="sp sp0"><div class="h">Stable</div><div class="d">curve hugs the baseline</div></div>
+      <div class="sp sp1"><div class="h">Degrade</div><div class="d">finite drop, still learning</div></div>
+      <div class="sp sp2"><div class="h">Degrade+</div><div class="d">a real, lasting gap</div></div>
+      <div class="sp sp3"><div class="h">Collapse</div><div class="d">learning stalls out</div></div>
+    </div>
+
+    <div class="callout c-bad reveal">
+      <span class="tag"><i class="fa-solid fa-triangle-exclamation"></i> The headline</span>
+      <p><strong>FedAgent is robust to task-level heterogeneity and worst-case fragile to environment-level heterogeneity.</strong> Two differences that look like cousins; opposite fates. The obvious next question is the only one that matters: <em>why?</em></p>
+    </div>
+
+    <h2 class="reveal"><span class="num">4</span>The one idea: Input&ndash;Dynamics Asymmetry</h2>
+    <p class="dek reveal">It comes down to <em>where</em> each kind of information enters the agent.</p>
+
+    <p class="reveal">Look at how an LLM (large-language-model) agent actually receives the two things. Its <strong>task</strong> arrives <em>in the prompt</em> &mdash; spelled out in words it can read: &ldquo;buy a wireless mouse under $30.&rdquo; The agent can see it and act differently depending on what it says &mdash; type a different request, get different behavior. That&rsquo;s exactly what these models are built to do. This is the <strong>explicit</strong> channel.</p>
+
+    <p class="reveal">Its <strong>environment</strong> arrives nowhere. How the world behaves &mdash; how this particular store ranks its results, how this app responds to a click &mdash; is never written into the prompt. The agent only ever feels it <em>indirectly</em>, through what happens after it acts. That&rsquo;s the <strong>implicit</strong> channel.</p>
+
+    <div class="fig reveal">
+      <div class="channels">
+        <div class="cnode task"><div class="lbl">The task</div><div class="big">in the prompt</div></div>
+        <div class="carrow explicit"><span class="a">&rarr;</span><span class="t">EXPLICIT<br>it can read this</span></div>
+        <div class="cnode agent"><div class="lbl">The agent</div><div class="big">its trained model</div></div>
+        <div class="carrow implicit"><span class="a">&harr;</span><span class="t">IMPLICIT<br>only felt as consequences</span></div>
+        <div class="cnode env"><div class="lbl">The world</div><div class="big">how it reacts</div></div>
+      </div>
+      <p class="figcap"><b>The Input&ndash;Dynamics Asymmetry.</b> The task enters through a channel the agent can see; the world never does. That single structural gap is the whole story.</p>
+    </div>
+
+    <p class="reveal">Now the asymmetry falls out almost for free. When clients differ in their <em>tasks</em>, their prompts differ too &mdash; so one shared model can serve all of them, the way a single chatbot already answers different questions differently. Each client&rsquo;s practice teaches a different slice of the same &ldquo;read the request, act on it&rdquo; skill. The lessons stack up instead of clashing.</p>
+
+    <p class="reveal">When clients differ in their <em>environments</em>, the prompts look <em>identical</em> &mdash; same goal, same screen, same words &mdash; yet the right move is different in each world. The agent has nothing in its input telling it which world it&rsquo;s in, so one model is forced to commit to a single behavior for a situation that has two different correct answers. Each client&rsquo;s practice now pushes the shared numbers in the <em>opposite</em> direction, and averaging them gives a mushy compromise that&rsquo;s wrong in both.</p>
+
+    <div class="callout c-aha reveal">
+      <span class="tag"><i class="fa-solid fa-lightbulb"></i> The intuition</span>
+      <p class="big">Same prompt, different planet.</p>
+      <p>Two clients show the agent the identical situation but live under different physics. With no slot in its input to say <strong>which</strong> planet it&rsquo;s on, the averaged agent is forced to believe water flows up <em>and</em> down. No amount of model size or data fixes a contradiction it isn&rsquo;t allowed to see.</p>
+    </div>
+
+    <details class="mathbox reveal">
+      <summary><i class="fa-solid fa-chevron-right"></i> For the curious: the two bounds, in one breath</summary>
+      <div class="mb-body">
+        <p><strong>Task side (robust).</strong> The worst per-client gap is bounded by a term that looks like \(\sqrt{(1+\chi^2)\,R_{\max} H\,(\varepsilon_{\text{approx}}+\varepsilon_{\text{opt}})}\). The only &ldquo;heterogeneity&rdquo; quantity in it is a \(\chi^2\) divergence between client task mixtures &mdash; and it multiplies errors (\(\varepsilon_{\text{approx}}\), \(\varepsilon_{\text{opt}}\)) that shrink toward zero as the model gets bigger and training proceeds. There is <em>no</em> irreducible term. Robustness is the default state.</p>
+        <p><strong>Environment side (fragile).</strong> One can construct environments &mdash; the canonical one is a two-client bandit where client&nbsp;1&rsquo;s best action is client&nbsp;2&rsquo;s worst &mdash; with a worst-client gap bounded <em>below</em> by \(\Omega(R_{\max} H\,\delta)\), where \(\delta\) is how far the clients&rsquo; dynamics diverge. That floor doesn&rsquo;t depend on capacity, samples, training time, or optimizer. You cannot scale your way out of it.</p>
+        <p>The empirical curves you just dragged through are these two theorems, made visible.</p>
+      </div>
+    </details>
+
+    <h2 class="reveal"><span class="num">5</span>Escape hatches (and why LLMs are special)</h2>
+    <p class="dek reveal">A worst-case wall isn&rsquo;t an always-case wall. Three ways robustness comes back.</p>
+
+    <p class="reveal">&ldquo;Worst-case fragile&rdquo; is a statement about the nastiest possible environment split. Most real ones aren&rsquo;t that nasty, and the theory says exactly when you&rsquo;re safe. Robustness returns whenever any of three things holds:</p>
+
+    <p class="reveal"><strong>1. The disagreement never comes up.</strong> If the optimal way to solve the task simply avoids the states where the worlds disagree, the conflict is off the agent&rsquo;s path and never bites.</p>
+    <p class="reveal"><strong>2. The rankings still agree.</strong> The worlds can differ in their details yet still prefer the <em>same</em> action at each step. Different scenery, same best move &mdash; one policy serves both.</p>
+    <p class="reveal"><strong>3. The world reveals itself.</strong> If the agent can <em>tell</em> which environment it&rsquo;s in from what it observes, it can act differently in each &mdash; effectively moving the environment out of the implicit channel and into the explicit one.</p>
+
+    <p class="reveal">That third one is where LLM agents do something almost sneaky. Having read a huge slice of the world during training, they figure out <em>which world am I in</em> on the fly, from clues sitting right in front of them &mdash; the site&rsquo;s branding, the wording of an error, a Windows-style file path &mdash; the same way you can tell a British site from a US one by the spelling and the &pound; signs. The environment was never handed to them in the prompt, but they reconstruct it from the cues and act on it. (The technical name is <em>in-context inference</em>.)</p>
+
+    <div class="callout c-good reveal">
+      <span class="tag"><i class="fa-solid fa-wand-magic-sparkles"></i> Why your agent probably survives</span>
+      <p>This is why LLM agents hold up across genuinely different real websites &mdash; the cues are everywhere &mdash; and only truly collapse on adversarial benchmarks <em>engineered to strip those cues away</em>, leaving two different worlds wearing the exact same mask.</p>
+    </div>
+
+    <p class="reveal">And there&rsquo;s a free, practical lever. Flip Widget&nbsp;3 from GRPO to PPO &mdash; a more cautious training algorithm &mdash; and the collapsed runs climb back up: the 15% case to ~45%, the 11% case to ~40%. PPO refuses to take the big, lurching steps that a tug-of-war between worlds produces, so it bends where GRPO snaps. The worst case is still real &mdash; Rank Wrapper stays stubbornly low &mdash; but in practice you usually have room to maneuver.</p>
+
+    <h2 class="reveal"><span class="num">6</span>So what</h2>
+    <p class="dek reveal">What to take away if you build, deploy, or study these systems.</p>
+
+    <div class="takeaways reveal">
+      <div class="tk"><i class="fa-solid fa-lock"></i><h4>Privacy</h4><p>You can train a shared agent across hospitals, homes, or companies without anyone pooling their raw data &mdash; and pay almost nothing for it when clients differ in <em>what</em> they do.</p></div>
+      <div class="tk"><i class="fa-solid fa-sliders"></i><h4>Personalization</h4><p>The failure mode is also a design rule: when clients live in genuinely different worlds, give the agent a way to <em>see</em> which one &mdash; say which world it&rsquo;s in through the prompt, surface visible cues, or train a separate specialist per world.</p></div>
+      <div class="tk"><i class="fa-solid fa-arrows-up-down-left-right"></i><h4>Scalability</h4><p>Know which axis you&rsquo;re scaling. More task diversity across clients is nearly free; more environment diversity needs the escape hatches, or it caps how far federation can take you.</p></div>
+    </div>
+
+    <p class="reveal">The whole thing reduces to a question you can ask about any agent you&rsquo;re about to train across clients: <strong>is the thing that differs between them something the agent can read, or only something it has to feel?</strong> If it&rsquo;s in the prompt, federation is on your side. If it&rsquo;s in the dynamics, make it readable &mdash; or expect the wall.</p>
+
+    <div class="endcta reveal">
+      <h3>Read the paper, run the code</h3>
+      <p>Everything above &mdash; the theorems, the five environment attacks, the GRPO and PPO sweeps across four models &mdash; is in the paper and the open-source repo.</p>
+      <div class="btns">
+        <a class="btn btn-primary" href="/pdf/FedAgent.pdf" target="_blank"><i class="fa-solid fa-file-pdf"></i> Read the paper</a>
+        <a class="btn btn-ghost" href="https://github.com/canyuchen/fedagent" target="_blank"><i class="fa-brands fa-github"></i> Code</a>
+        <a class="btn btn-ghost" href="/"><i class="fa-solid fa-house"></i> Project page</a>
+      </div>
+    </div>
+
+    <div class="cite reveal">
+      <strong>Citation.</strong> Chen, Zhu, Chen, Zhou, Diao, Lu, Li, Li, Song. <em>Is Decentralized LLM Agent RL Robust to Heterogeneity? An Asymmetric Tale.</em> 2026. <br>
+      <code>github.com/canyuchen/fedagent</code> &middot; <code>fed-agent.github.io</code>
+    </div>
+
+    <p class="foot">A FedAgent explainer &middot; built with the paper&rsquo;s real training data &middot; <a href="/">fed-agent.github.io</a></p>
+
+  </div>
+</div>
+</article>
+
+<script>
+const CHART_DATA = {"figures":{"main":{"axes":[{"key":"webshop","title":"(a) Uniform, WebShop","ymax":73,"series":[{"label":"Centralized","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,3.91,5.47,4.69,6.25,4.69,7.81,11.72,10.16,14.06,15.62,11.72,14.06,13.28,16.41,20.31,15.62,10.16,10.16,8.59,10.16,8.59,10.94,11.72,17.97,18.75,17.19,20.31,24.22,27.34,23.44,25.0,30.47,28.91,32.81,39.06,31.25,34.38,39.84,45.31,41.41,45.31,42.19,39.84,43.75,42.19,35.94,44.53,31.25,49.22,47.66,56.25,53.91,53.91,47.66,46.88,53.12,50.78,37.5,45.31,46.09,45.31,50.0,50.78,49.22,48.44,53.91,58.59,57.03,53.12,60.6]},{"label":"FedAgent","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,4.69,6.25,5.47,3.91,7.03,3.91,6.25,4.69,7.03,3.91,3.12,7.03,3.91,3.91,3.91,7.81,9.38,7.03,8.59,21.88,11.72,20.31,19.53,17.97,13.28,17.19,19.53,14.06,20.31,21.09,21.09,12.5,10.94,19.53,25.0,17.97,21.09,23.44,25.0,28.12,32.03,31.25,28.12,15.62,32.81,37.5,32.81,35.94,41.41,39.06,40.62,41.41,45.31,46.09,50.0,51.56,49.22,55.47,55.47,56.25,55.47,53.12,57.03,61.72,58.59,59.38,58.59,54.69,57.81,60.3]}]},{"key":"alfworld","title":"(b) Uniform, ALFWorld","ymax":73,"series":[{"label":"Centralized","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[6.25,6.25,9.38,7.81,10.94,7.81,10.94,9.38,9.38,7.81,9.38,20.31,14.06,14.06,9.38,9.38,17.19,9.38,7.81,7.81,6.25,12.5,14.06,15.62,20.31,14.06,18.75,20.31,14.06,18.75,21.88,23.44,26.56,28.12,29.69,23.44,20.31,23.44,15.62,17.19,20.31,21.88,29.69,32.81,32.81,37.5,37.5,40.62,37.5,40.62,32.81,40.62,42.19,37.5,37.5,31.25,37.5,37.5,32.81,35.94,39.06,34.38,43.75,45.31,43.75,39.06,45.31,42.19,51.56,46.88,53.5]},{"label":"FedAgent","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[6.25,9.38,3.12,10.94,3.12,4.69,12.5,9.38,12.5,15.62,18.75,12.5,15.62,14.06,17.19,20.31,21.88,17.19,21.88,17.19,20.31,21.88,18.75,14.06,17.19,34.38,21.88,21.88,21.88,18.75,28.12,23.44,21.88,28.12,31.25,28.12,28.12,26.56,29.69,39.06,39.06,32.81,42.19,39.06,32.81,40.62,42.19,51.56,43.75,43.75,43.75,45.31,40.62,32.81,45.31,37.5,39.06,39.06,39.06,45.31,42.19,40.62,50.0,53.12,64.06,54.69,54.69,53.12,48.44,48.44,61.9]}]}]},"heterogeneous":{"axes":[{"key":"preference_webshop","title":"(a) Preference Heterogeneity, WebShop","ymax":73,"series":[{"label":"\u03c9=0.01","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,3.91,5.47,1.56,3.91,10.16,10.16,10.16,10.16,9.38,11.72,10.94,10.94,14.06,14.06,11.72,17.97,22.66,20.31,22.66,18.75,17.97,17.97,25.0,28.91,25.78,21.88,25.0,32.03,39.06,35.94,33.59,36.72,45.31,44.53,45.31,45.31,44.53,42.19,51.56,49.22,46.88,49.22,44.53,50.78,50.0,51.56,47.66,47.66,46.88,50.0,46.09,50.78,51.56,46.88,49.22,53.91,50.78,50.78,53.12,53.12,57.03,53.12,52.34,51.56,51.56,49.22,54.69,53.91,46.88,45.32]},{"label":"\u03c9=0.99","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,3.12,4.69,7.81,11.72,10.94,12.5,4.69,12.5,9.38,10.94,7.81,18.75,17.19,17.19,15.62,17.19,16.41,17.19,16.41,21.09,23.44,28.12,25.78,26.56,25.78,29.69,32.03,37.5,25.0,29.69,33.59,33.59,37.5,45.31,47.66,46.09,49.22,46.09,45.31,48.44,49.22,44.53,52.34,57.81,53.91,51.56,44.53,50.78,48.44,52.34,52.34,57.81,64.06,57.03,53.12,60.94,59.38,54.69,60.16,55.47,54.69,55.47,57.81,53.12,48.44,63.28,60.94,60.94,62.5,65.98]}]},{"key":"preference_alfworld","title":"(b) Preference Heterogeneity, ALFWorld","ymax":73,"series":[{"label":"\u03c9=0.01","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[6.25,9.38,6.25,10.94,4.69,9.38,7.81,10.94,6.25,10.94,9.38,18.75,12.5,17.19,20.31,15.62,17.19,14.06,15.62,12.5,17.19,18.75,23.44,23.44,18.75,23.44,28.12,29.69,25.0,29.69,29.69,29.69,31.25,34.38,31.25,32.81,37.5,42.19,34.38,35.94,40.62,39.06,39.06,34.38,39.06,43.75,46.88,40.62,45.31,46.88,51.56,42.19,40.62,48.44,46.88,54.69,50.0,45.31,50.0,56.25,50.0,53.12,54.69,53.12,59.38,53.12,51.56,53.12,60.94,62.25,66.58]},{"label":"\u03c9=0.99","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[6.25,6.25,9.38,4.69,10.94,9.38,7.81,12.5,12.5,17.19,15.62,15.62,10.94,20.31,23.44,18.75,17.19,21.88,21.88,23.44,21.88,26.56,25.0,23.44,26.56,17.19,21.88,23.44,17.19,26.56,20.31,20.31,20.31,23.44,25.0,28.12,28.12,25.0,28.12,35.94,28.12,28.12,35.94,37.5,34.38,39.06,35.94,42.19,34.38,29.69,37.5,39.06,32.81,46.88,45.31,42.19,50.0,50.0,40.62,48.44,46.88,50.0,57.81,45.31,53.12,50.0,51.56,57.81,59.38,51.56,53.5]}]},{"key":"coverage_webshop","title":"(c) Coverage Heterogeneity, WebShop","ymax":73,"series":[{"label":"\u03be=1","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,3.12,6.25,3.91,6.25,7.81,5.47,7.81,7.03,7.03,8.59,7.03,9.38,11.72,8.59,11.72,8.59,11.72,17.97,17.19,14.06,19.53,25.78,20.31,22.66,17.19,17.97,22.66,15.62,14.06,14.84,16.41,21.09,21.09,21.88,28.12,27.34,29.69,31.25,28.91,29.69,35.16,40.62,37.5,42.19,39.84,42.97,44.53,53.12,51.56,50.0,50.78,43.75,56.25,55.47,53.91,54.69,53.91,45.31,53.12,52.34,57.03,61.72,62.5,61.72,54.69,29.69,41.41,46.88,44.53,40.36]},{"label":"\u03be=256","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,5.47,7.81,1.56,3.91,8.59,5.47,3.91,8.59,9.38,9.38,12.5,7.03,13.28,8.59,10.16,11.72,17.97,11.72,13.28,12.5,11.72,10.94,14.06,9.38,13.28,21.88,21.09,23.44,19.53,21.09,28.91,25.0,21.88,17.97,26.56,26.56,25.78,27.34,28.12,17.97,21.88,28.91,31.25,24.22,28.91,30.47,30.47,29.69,16.41,34.38,33.59,37.5,42.19,43.75,44.53,42.19,46.88,49.22,45.31,42.97,47.66,48.44,46.88,52.34,52.34,47.66,42.97,39.84,50.0,45.18]}]},{"key":"coverage_alfworld","title":"(d) Coverage Heterogeneity, ALFWorld","ymax":85,"series":[{"label":"\u03be=1","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[6.25,6.25,4.69,6.25,12.5,10.94,12.5,10.94,7.81,3.12,9.38,14.06,14.06,15.62,15.62,7.81,10.94,18.75,15.62,17.19,23.44,21.88,12.5,14.06,17.19,15.62,21.88,20.31,25.0,26.56,23.44,26.56,25.0,32.81,35.94,32.81,21.88,28.12,32.81,35.94,34.38,37.5,34.38,32.81,43.75,39.06,35.94,42.19,39.06,34.38,34.38,32.81,48.44,45.31,48.44,50.0,54.69,54.69,53.12,50.0,59.38,51.56,56.25,56.25,57.81,48.44,48.44,46.88,56.25,54.69,55.78]},{"label":"\u03be=256","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[6.25,6.25,9.38,9.38,17.19,7.81,6.25,9.38,14.06,18.75,17.19,15.62,10.94,9.38,15.62,14.06,10.94,15.62,20.31,25.0,18.75,20.31,18.75,14.06,17.19,26.56,25.0,25.0,28.12,29.69,31.25,29.69,32.81,40.62,39.06,50.0,37.5,45.31,37.5,43.75,43.75,48.44,43.75,51.56,50.0,50.0,48.44,50.0,51.56,57.81,57.81,53.12,53.12,57.81,57.81,64.06,64.06,53.12,56.25,62.5,65.62,59.38,51.56,59.38,56.25,60.94,64.06,65.62,70.31,76.56,76.6]}]},{"key":"hardness_webshop","title":"(e) Hardness Heterogeneity, WebShop","ymax":73,"series":[{"label":"\u03be\u2032=1","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,4.69,3.91,3.12,3.12,8.59,5.47,3.12,5.47,7.81,7.81,9.38,7.03,10.16,13.28,16.41,14.84,11.72,14.06,14.84,14.84,19.53,21.88,20.31,21.09,24.22,27.34,17.97,14.06,20.31,25.0,21.09,27.34,21.09,17.97,25.78,23.44,29.69,28.12,28.12,27.34,29.69,28.91,28.91,38.28,39.06,23.44,37.5,31.25,41.41,47.66,46.88,46.09,44.53,53.12,53.12,52.34,54.69,46.88,50.78,56.25,52.34,47.66,56.25,57.03,54.69,54.69,62.5,60.16,35.16,35.6]},{"label":"\u03be\u2032=256","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,7.03,6.25,3.12,8.59,7.03,9.38,9.38,9.38,11.72,8.59,8.59,6.25,8.59,7.81,10.16,13.28,10.16,12.5,12.5,10.94,14.06,10.16,13.28,16.41,17.19,14.84,14.84,18.75,20.31,15.62,21.09,15.62,10.94,25.78,20.31,17.97,25.78,27.34,32.03,27.34,32.81,28.91,34.38,25.0,27.34,35.16,29.69,32.03,28.12,32.81,39.84,42.19,39.06,34.38,46.88,47.66,49.22,46.09,47.66,48.44,46.88,50.0,57.03,57.03,60.94,60.94,58.59,56.25,62.5,57.08]}]},{"key":"hardness_alfworld","title":"(f) Hardness Heterogeneity, ALFWorld","ymax":73,"series":[{"label":"\u03be\u2032=1","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[6.25,6.25,7.81,10.94,7.81,9.38,20.31,15.62,15.62,15.62,10.94,9.38,14.06,18.75,14.06,7.81,17.19,14.06,21.88,18.75,6.25,20.31,18.75,17.19,18.75,15.62,17.19,17.19,18.75,31.25,32.81,29.69,28.12,34.38,31.25,32.81,37.5,35.94,46.88,32.81,37.5,39.06,39.06,45.31,45.31,48.44,42.19,43.75,40.62,43.75,42.19,48.44,48.44,57.81,53.12,56.25,54.69,62.5,51.56,59.38,56.25,57.81,62.5,56.25,54.69,62.5,51.56,64.06,62.5,59.38,57.01]},{"label":"\u03be\u2032=256","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[6.25,10.94,10.94,12.5,12.5,7.81,7.81,7.81,9.38,9.38,6.25,9.38,6.25,7.81,15.62,23.44,17.19,20.31,12.5,4.69,20.31,12.5,15.62,15.62,15.62,25.0,25.0,28.12,18.75,21.88,23.44,21.88,12.5,15.62,25.0,20.31,17.19,23.44,21.88,29.69,21.88,31.25,28.12,28.12,32.81,42.19,39.06,39.06,40.62,35.94,35.94,42.19,43.75,34.38,42.19,35.94,50.0,53.12,42.19,45.31,40.62,48.44,48.44,43.75,42.19,57.81,45.31,45.31,59.38,51.56,51.25]}]}]},"env_variants":{"axes":[{"key":"grpo","title":"(a) Env-level Heterogeneity, GRPO","ymax":73,"series":[{"label":"Uniform","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[0.0,4.69,6.25,5.47,3.91,7.03,3.91,6.25,4.69,7.03,3.91,3.12,7.03,3.91,3.91,3.91,7.81,9.38,7.03,8.59,21.88,11.72,20.31,19.53,17.97,13.28,17.19,19.53,14.06,20.31,21.09,21.09,12.5,10.94,19.53,25.0,17.97,21.09,23.44,25.0,28.12,32.03,31.25,28.12,15.62,32.81,37.5,32.81,35.94,41.41,39.06,40.62,41.41,45.31,46.09,50.0,51.56,49.22,55.47,55.47,56.25,55.47,53.12,57.03,61.72,58.59,59.38,58.59,54.69,57.81,60.3]},{"label":"Catalog Split","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[5.47,5.86,4.69,4.69,5.47,6.25,5.86,5.47,8.98,7.81,6.25,5.47,5.47,5.08,4.69,9.77,5.47,8.59,10.94,13.28,14.06,12.89,16.8,17.19,15.23,14.06,14.06,15.62,14.06,14.45,16.02,17.58,19.53,19.53,24.22,23.44,25.39,26.17,23.44,25.0,28.52,25.0,32.42,30.08,37.5,40.62,38.28,39.45,35.55,41.41,44.92,32.81,36.72,32.03,32.03,39.45,43.36,42.19,42.97,44.14,40.62,31.25,36.72,45.31,42.97,44.53,28.91,32.42,35.16,40.62,44.26]},{"label":"Field-Subset Index","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[5.47,1.95,3.91,5.08,5.47,4.69,7.42,5.47,6.64,6.25,7.03,4.3,6.64,5.47,7.42,11.33,4.69,6.25,7.03,7.42,7.81,12.89,9.38,8.2,10.55,13.28,7.03,10.55,11.72,10.94,14.06,13.67,13.28,11.72,14.45,16.41,17.19,11.33,7.81,6.25,9.38,10.55,7.42,7.81,10.94,11.72,18.36,13.67,13.67,15.62,10.94,11.33,11.72,11.72,12.5,10.94,12.5,14.84,10.16,10.94,10.55,11.72,16.02,15.62,17.97,14.45,15.62,13.28,17.19,16.02,14.94]},{"label":"BM25 Reweighting","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[3.52,2.73,4.69,4.69,5.47,7.03,6.64,3.91,7.03,9.77,9.77,8.98,5.47,7.42,7.81,9.77,9.77,11.72,10.16,11.33,10.55,12.11,8.59,13.67,12.5,14.06,17.19,13.67,16.41,14.06,13.28,10.94,14.06,16.8,14.06,13.28,17.19,12.5,14.45,12.11,16.02,13.28,19.92,18.36,19.92,21.48,21.48,20.31,27.34,29.69,26.95,24.22,23.44,25.78,26.95,26.95,28.52,25.78,25.78,30.47,24.22,29.3,28.91,28.52,35.55,28.91,36.72,37.11,32.03,34.77,34.06]},{"label":"Lookalike Injection","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[4.69,7.81,3.12,3.91,5.47,1.56,6.25,4.69,8.59,3.91,5.47,5.47,5.47,7.03,10.16,10.94,10.16,6.25,7.03,3.91,5.47,7.81,6.25,13.28,7.81,7.81,10.94,9.38,10.92,14.23,12.82,6.26,7.21,14.14,3.76,13.6,13.36,9.46,7.52,7.27,7.04,9.37,10.13,10.76,16.11,13.72,11.72,16.17,6.94,6.32,11.8,5.02,4.97,10.76,10.23,15.68,12.27,10.94,10.78,7.83,5.05,7.27,13.31,7.46,9.53,5.19,15.15,7.09,8.49,15.89,11.49]},{"label":"Rank Wrapper","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[4.3,1.56,5.86,5.08,6.25,6.25,4.69,6.64,4.3,6.25,7.42,9.38,8.98,4.3,6.64,6.25,7.81,4.69,4.69,5.47,3.12,4.3,5.47,6.25,5.08,3.12,6.25,6.25,3.12,7.03,8.98,8.98,9.77,8.59,7.42,8.98,5.47,5.47,5.47,6.25,9.38,6.64,8.2,8.59,5.47,6.25,10.94,6.25,8.98,8.59,7.42,5.86,6.25,8.2,9.77,7.03,4.69,5.86,9.38,7.81,8.2,7.42,7.81,7.03,9.77,8.59,7.81,7.42,6.64,12.5,11.51]}]},{"key":"ppo","title":"(b) Env-level Heterogeneity, PPO","ymax":73,"series":[{"label":"Uniform","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[4.69,4.69,6.25,7.03,10.16,7.03,12.5,10.94,10.94,6.25,12.5,20.31,17.19,7.81,17.19,15.62,21.88,17.19,18.75,23.44,20.31,18.75,26.56,25.0,18.75,25.0,20.31,21.88,23.44,28.12,31.25,28.12,26.56,31.25,34.38,35.94,35.94,32.81,39.06,26.56,42.19,40.62,31.25,37.5,35.94,50.0,53.12,45.31,43.75,46.88,53.12,51.56,54.69,56.25,50.0,56.25,60.94,50.0,59.38,59.38,54.69,54.69,64.06,56.25,59.38,64.06,53.12,56.25,59.38,62.5,60.7]},{"label":"Catalog Split","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[7.81,3.12,9.38,6.25,4.69,7.81,10.94,9.38,10.94,14.06,9.38,14.06,14.06,15.62,14.06,15.62,17.19,17.19,20.31,17.19,17.19,14.06,25.0,21.88,23.44,20.31,18.75,25.0,21.88,26.56,25.0,23.44,37.5,23.44,28.12,32.81,28.12,29.69,32.81,43.75,40.62,32.81,25.0,29.69,32.81,32.81,35.94,34.38,39.06,40.62,42.19,50.0,48.44,53.12,40.62,50.0,48.44,43.75,48.44,53.12,51.56,46.88,51.56,51.56,51.56,60.94,50.0,54.69,57.81,60.94,59.09]},{"label":"Field-Subset Index","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[7.81,6.25,12.5,10.94,9.38,7.81,12.5,12.5,6.25,4.69,7.81,9.38,10.94,14.06,10.94,15.62,14.06,7.81,7.81,10.94,10.94,10.94,12.5,4.69,10.94,4.69,4.69,14.06,12.5,17.19,15.62,12.5,12.5,18.75,29.69,21.88,21.88,17.19,10.94,15.62,10.94,10.94,20.31,20.31,26.56,20.31,20.31,18.75,26.56,29.69,29.69,25.0,25.0,28.12,28.12,29.69,40.62,31.25,34.38,29.69,39.06,35.94,39.06,29.69,48.44,39.06,32.81,40.62,39.06,42.19,44.95]},{"label":"BM25 Reweighting","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[7.81,0.0,6.25,10.94,7.81,7.81,12.5,9.38,14.06,12.5,14.06,10.94,17.19,15.62,18.75,14.06,14.06,14.06,15.62,9.38,15.62,25.0,14.06,18.75,15.62,25.0,23.44,14.06,26.56,21.88,18.75,17.19,15.62,12.5,12.5,18.75,18.75,15.62,15.62,12.5,14.06,14.06,20.31,17.19,23.44,15.62,21.88,23.44,26.56,25.0,39.06,40.62,35.94,23.44,25.0,29.69,29.69,15.62,26.56,20.31,20.31,20.31,14.06,25.0,18.75,32.81,28.12,40.62,34.38,43.75,47.16]},{"label":"Lookalike Injection","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[7.81,7.81,6.25,10.94,7.81,3.12,3.12,10.94,6.25,6.25,6.25,6.25,9.38,15.62,12.5,12.5,21.88,17.19,21.88,23.44,21.88,18.75,26.56,20.31,21.88,25.0,31.25,25.0,26.56,25.0,25.0,26.56,26.56,34.38,31.25,28.12,29.69,29.69,29.69,32.81,34.38,34.38,42.19,42.19,42.19,42.19,42.19,43.75,42.19,37.5,46.88,43.75,40.62,35.94,45.31,43.75,34.38,45.31,39.06,42.19,45.31,48.44,48.44,43.75,40.62,42.19,43.75,42.19,42.19,43.75,40.16]},{"label":"Rank Wrapper","x":[0.0,3.0,6.0,9.0,12.0,15.0,18.0,21.0,24.0,27.0,30.0,33.0,36.0,39.0,42.0,45.0,48.0,51.0,54.0,57.0,60.0,63.0,66.0,69.0,72.0,75.0,78.0,81.0,84.0,87.0,90.0,93.0,96.0,99.0,102.0,105.0,108.0,111.0,114.0,117.0,120.0,123.0,126.0,129.0,132.0,135.0,138.0,141.0,144.0,147.0,150.0,153.0,156.0,159.0,162.0,165.0,168.0,171.0,174.0,177.0,180.0,183.0,186.0,189.0,192.0,195.0,198.0,201.0,204.0,207.0,210.0],"y":[7.81,10.94,6.25,6.25,7.81,3.12,3.12,6.25,6.25,9.38,10.94,9.38,7.81,7.81,4.69,14.06,7.81,6.25,10.94,7.81,7.81,7.81,7.81,9.38,6.25,4.69,7.81,6.25,12.5,14.06,12.5,4.69,17.19,15.62,15.62,7.81,7.81,9.38,9.38,10.94,7.81,15.62,10.94,14.06,14.06,17.19,15.62,15.62,10.94,15.62,14.06,17.19,17.19,12.5,15.62,14.06,12.5,17.19,17.19,9.38,14.06,17.19,14.06,18.75,12.5,21.88,12.5,10.94,17.19,18.75,17.32]}]}]}}};
+
+/* ---------- reveal + progress: run FIRST so article text never depends on the charts/CDN ---------- */
+(function(){
+  var revealAll=function(){document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in');});};
+  var prog=document.getElementById('progress');
+  var onScroll=function(){var h=document.documentElement;var max=h.scrollHeight-h.clientHeight;if(prog)prog.style.width=(max>0?(h.scrollTop/max*100):0)+'%';};
+  document.addEventListener('scroll',onScroll,{passive:true});onScroll();
+  try{
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.12,rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+  }catch(_){revealAll();}
+  setTimeout(revealAll,2600); // fail-safe: never leave content hidden
+})();
+
+/* ---------- shared chart helpers ---------- */
+const INDIGO='#2a2f6c', GREY='#9aa0b4';
+const ENV_COLORS={'Uniform':GREY,'Catalog Split':'#2e7d32','BM25 Reweighting':'#3f8f7a','Field-Subset Index':'#e0a93a','Lookalike Injection':'#e8662a','Rank Wrapper':'#c0392b'};
+const ENV_ORDER=['Uniform','Catalog Split','BM25 Reweighting','Field-Subset Index','Lookalike Injection','Rank Wrapper'];
+const Y_MAX=80, X_MAX=213;
+
+const AXIS_FONT={family:'Inter',size:12,weight:'600'};
+const TICK_FONT={family:'Inter',size:11};
+
+function axisOf(fig,key){const f=CHART_DATA.figures[fig];return f.axes.find(a=>a.key===key)||f.axes[0];}
+function seriesOf(fig,key,label){return axisOf(fig,key).series.find(s=>s.label===label);}
+
+function draw(canvas,list){
+  if(typeof Chart==='undefined')return; // CDN down: skip chart, readouts/text still render
+  if(canvas.__chart) canvas.__chart.destroy();
+  const datasets=list.map(s=>({
+    label:s.label,
+    data:s.x.map((xi,j)=>({x:xi,y:s.y[j]})),
+    borderColor:s.color, backgroundColor:s.color,
+    borderWidth:s.hero?3:2.2,
+    borderDash:s.dashed?[6,5]:[],
+    tension:0.3, pointRadius:0, pointHoverRadius:4, pointHitRadius:8,
+    fill:false, order:s.hero?0:(s.order??1),
+  }));
+  canvas.__chart=new Chart(canvas,{
+    type:'line', data:{datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:{duration:450},
+      interaction:{mode:'nearest',axis:'x',intersect:false},
+      scales:{
+        x:{type:'linear',min:0,max:X_MAX,title:{display:true,text:'Training epoch',font:AXIS_FONT,color:'#6b7186'},ticks:{stepSize:50,font:TICK_FONT,color:'#9aa0b4'},grid:{display:false},border:{color:'#d7dae6'}},
+        y:{min:0,max:Y_MAX,title:{display:true,text:'Success rate (%)',font:AXIS_FONT,color:'#6b7186'},ticks:{font:TICK_FONT,color:'#9aa0b4'},grid:{color:'#eef0f5'},border:{display:false}},
+      },
+      plugins:{
+        legend:{position:'top',labels:{usePointStyle:true,pointStyle:'line',boxWidth:22,font:{family:'Inter',size:12},color:'#3e4358',padding:12}},
+        tooltip:{backgroundColor:'rgba(29,32,48,.95)',padding:10,cornerRadius:8,callbacks:{title:it=>`Epoch ${Math.round(it[0].parsed.x)}`,label:it=>` ${it.dataset.label}: ${it.parsed.y.toFixed(1)}%`}},
+      },
+    },
+  });
+}
+const fin=s=>s.y[s.y.length-1];
+function segWire(id,cb){const g=document.getElementById(id);g.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{g.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');cb(b.dataset.v);}));}
+function statHTML(v,k,cls){return `<div class="stat ${cls}"><span class="v">${v}</span><span class="k">${k}</span></div>`;}
+
+/* ---------- Widget 1: federated vs centralized ---------- */
+(function(){
+  const cv=document.getElementById('w1-canvas');
+  const st={bench:'webshop',fed:false};
+  function render(){
+    const cen=seriesOf('main',st.bench,'Centralized');
+    const fed=seriesOf('main',st.bench,'FedAgent');
+    const list=[{...cen,color:GREY,dashed:true}];
+    if(st.fed) list.push({...fed,color:INDIGO,hero:true});
+    draw(cv,list);
+    const read=document.getElementById('w1-read');
+    if(!st.fed){
+      read.innerHTML=statHTML(fin(cen).toFixed(0)+'%','Centralized (all data pooled)','neu')+
+        `<div class="readnote">This is the agent trained centrally on every client&rsquo;s data at once &mdash; the target to match. Now flip on <b>FedAgent</b>.</div>`;
+    }else{
+      const d=(fin(fed)-fin(cen));
+      read.innerHTML=statHTML(fin(fed).toFixed(0)+'%','FedAgent (no data shared)','good')+
+        statHTML(fin(cen).toFixed(0)+'%','Centralized','neu')+
+        `<div class="readnote">Federated training ${d>=0?'matches and even edges past':'lands right on'} centralized &mdash; a <b>${(d>=0?'+':'')}${d.toFixed(1)} pt</b> difference at the end, with zero data sharing.</div>`;
+    }
+  }
+  segWire('w1-bench',v=>{st.bench=v;render();});
+  document.getElementById('w1-fed').addEventListener('change',e=>{st.fed=e.target.checked;render();});
+  render();
+})();
+
+/* ---------- Widget 2: task heterogeneity ---------- */
+const HET={
+  preference:{near:'ω=0.01',extreme:'ω=0.99',word:'each client sees almost only one task category'},
+  coverage:{near:'ξ=256',extreme:'ξ=1',word:'each client holds a tiny, narrow task pool'},
+  hardness:{near:'ξ′=256',extreme:'ξ′=1',word:'clients split into all-easy vs all-hard'},
+};
+(function(){
+  const cv=document.getElementById('w2-canvas');
+  const st={axis:'preference',bench:'webshop',ex:false};
+  function render(){
+    const m=HET[st.axis];const key=st.axis+'_'+st.bench;
+    const near=seriesOf('heterogeneous',key,m.near);
+    const extreme=seriesOf('heterogeneous',key,m.extreme);
+    const list=[{label:'Near-uniform',x:near.x,y:near.y,color:GREY,dashed:true}];
+    if(st.ex) list.push({label:'Extreme split',x:extreme.x,y:extreme.y,color:INDIGO,hero:true});
+    draw(cv,list);
+    const read=document.getElementById('w2-read');
+    if(!st.ex){
+      read.innerHTML=statHTML(fin(near).toFixed(0)+'%','Near-uniform baseline','neu')+
+        `<div class="readnote">A gentle, near-even split. Now flip on the <b>extreme split</b> &mdash; ${m.word} &mdash; and see if it falls apart.</div>`;
+    }else{
+      const d=fin(extreme)-fin(near);
+      read.innerHTML=statHTML(fin(extreme).toFixed(0)+'%','Extreme split','good')+
+        statHTML(fin(near).toFixed(0)+'%','Near-uniform','neu')+
+        `<div class="readnote">Pathological as it is, the extreme curve finishes <b>${(d>=0?'+':'')}${d.toFixed(1)} pts</b> from the baseline &mdash; no collapse. Task heterogeneity is essentially free.</div>`;
+    }
+  }
+  segWire('w2-axis',v=>{st.axis=v;render();});
+  segWire('w2-bench',v=>{st.bench=v;render();});
+  document.getElementById('w2-ex').addEventListener('change',e=>{st.ex=e.target.checked;render();});
+  render();
+})();
+
+/* ---------- Widget 3: environment heterogeneity ---------- */
+(function(){
+  const cv=document.getElementById('w3-canvas');
+  const st={opt:'grpo',sev:5};
+  const nameEl=document.getElementById('w3-sevname');
+  function render(){
+    const shown=ENV_ORDER.slice(0,st.sev+1);
+    const list=shown.map((lab,i)=>{
+      const s=seriesOf('env_variants',st.opt,lab);
+      const isUni=lab==='Uniform';
+      const isTop=i===shown.length-1 && !isUni;
+      return {label:lab,x:s.x,y:s.y,color:ENV_COLORS[lab],dashed:isUni,hero:isTop,order:isUni?2:(10-i)};
+    });
+    draw(cv,list);
+    const topLab=ENV_ORDER[st.sev];
+    nameEl.textContent=st.sev===0?'Uniform (baseline)':topLab;
+    nameEl.style.color=ENV_COLORS[topLab]||INDIGO;
+    const uni=seriesOf('env_variants',st.opt,'Uniform');
+    const read=document.getElementById('w3-read');
+    if(st.sev===0){
+      read.innerHTML=statHTML(fin(uni).toFixed(0)+'%','Uniform &mdash; same world for all','neu')+
+        `<div class="readnote">The reference ceiling. Drag <b>severity</b> right to make clients&rsquo; environments diverge.</div>`;
+    }else{
+      const top=seriesOf('env_variants',st.opt,topLab);
+      const drop=fin(uni)-fin(top);
+      const cls=fin(top)>=45?'neu':'bad';
+      let note;
+      if(st.opt==='grpo'){
+        note=drop>30?`<b>${topLab}</b> has all but stopped learning &mdash; a <b>${drop.toFixed(0)} pt</b> fall from the uniform ceiling. This is collapse.`:
+             drop>12?`<b>${topLab}</b> costs <b>${drop.toFixed(0)} pts</b> &mdash; a real, lasting gap, but still learning.`:
+             `<b>${topLab}</b> barely dents it (&minus;${drop.toFixed(0)} pts) &mdash; this shift is mild.`;
+      }else{
+        const g=seriesOf('env_variants','grpo',topLab);
+        const lift=fin(top)-fin(g);
+        note=lift>10?`PPO rescues <b>${topLab}</b>: <b>${fin(top).toFixed(0)}%</b> vs GRPO&rsquo;s ${fin(g).toFixed(0)}% &mdash; clipped updates climb back up where GRPO collapsed.`:
+             `<b>${topLab}</b>: even PPO can&rsquo;t do much here (${fin(top).toFixed(0)}%). The worst-case wall is real.`;
+      }
+      read.innerHTML=statHTML(fin(top).toFixed(0)+'%',topLab,cls)+
+        statHTML(fin(uni).toFixed(0)+'%','Uniform','neu')+
+        `<div class="readnote ${(st.opt==='grpo'&&drop>30)?'warn':''}">${note}</div>`;
+    }
+  }
+  segWire('w3-opt',v=>{st.opt=v;render();});
+  document.getElementById('w3-sev').addEventListener('input',e=>{st.sev=+e.target.value;render();});
+  render();
+})();
+</script>
+</body>
+</html>
