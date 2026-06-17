@@ -68,6 +68,18 @@ opacity: 0;
 animation: reveal 1.5s forwards;
 }
 
+/* Prevent flash-of-text: when JS is present, keep the animated hero name/subtitle
+   hidden until the entrance animation drives them in. No-JS keeps them visible. */
+.js #animated-name,
+.js #animated-title {
+opacity: 0;
+}
+
+/* Keep each word's letters together so the animated title wraps only between words */
+.reveal-word {
+white-space: nowrap;
+}
+
 @keyframes revealSubtitle {
 from {
     opacity: 0;

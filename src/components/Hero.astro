@@ -100,19 +100,34 @@
   function animateChars(el, baseDelay, charDelay) {
     const text = el.textContent || '';
     el.innerHTML = '';
-    text.split('').forEach((char, i) => {
-      const span = document.createElement('span');
-      span.textContent = char === ' ' ? ' ' : char;
-      span.className = 'reveal-char';
-      span.style.animationDelay = `${baseDelay + i * charDelay}s`;
-      el.appendChild(span);
+    let i = 0;
+    text.split(' ').forEach((word, w, words) => {
+      const wordEl = document.createElement('span');
+      wordEl.className = 'reveal-word';
+      for (const char of word) {
+        const span = document.createElement('span');
+        span.textContent = char;
+        span.className = 'reveal-char';
+        span.style.animationDelay = `${baseDelay + i * charDelay}s`;
+        wordEl.appendChild(span);
+        i++;
+      }
+      el.appendChild(wordEl);
+      if (w < words.length - 1) {
+        // breakable space between words; a word never splits across lines
+        el.appendChild(document.createTextNode(' '));
+        i++;
+      }
     });
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     const nameEl = document.getElementById('animated-name');
     const titleEl = document.getElementById('animated-title');
-    if (nameEl) animateChars(nameEl, 0, 0.07);
+    if (nameEl) {
+      animateChars(nameEl, 0, 0.07);
+      nameEl.style.opacity = '1';
+    }
     if (titleEl) {
       titleEl.style.opacity = '0';
       titleEl.style.transform = 'translateY(10px)';
@@ -132,7 +147,7 @@
   .logo-title-row { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.4rem; }
   .title-logo { width: 72px; height: 72px; }
   .project-name { font-size: 4.2rem; font-weight: 800; color: #2a2f6c; letter-spacing: -0.02em; line-height: 1; white-space: nowrap; }
-  .main-subtitle-line { font-size: 2.8rem; font-weight: 700; color: #333; margin-top: 0.4rem; text-align: center; }
+  .main-subtitle-line { font-size: 2.8rem; font-weight: 700; color: #333; margin-top: 0.4rem; text-align: center; line-height: 1.25; }
   .hero-desc { margin: 1rem auto 0; max-width: none; font-size: 1.2rem; color: #555; line-height: 1.55; white-space: nowrap; }
   .paper-title { font-size: 1.4rem; font-weight: 700; color: #2a2f6c; line-height: 1.4; margin-bottom: 1.1rem; white-space: nowrap; }
   .paper-title em { font-style: italic; color: inherit; }
@@ -157,7 +172,7 @@
   @media (max-width: 768px) {
     .title-logo { width: 52px; height: 52px; }
     .project-name { font-size: 3rem; }
-    .main-subtitle-line { font-size: 1.4rem; }
+    .main-subtitle-line { font-size: 1.65rem; }
     .hero-desc { font-size: 1rem; }
     .paper-title { font-size: 1.15rem; }
     .authors-list { padding: 1.1rem 1rem; }
@@ -168,6 +183,6 @@
   @media (max-width: 480px) {
     .title-logo { width: 40px; height: 40px; }
     .project-name { font-size: 2.5rem; }
-    .main-subtitle-line { font-size: 1.1rem; }
+    .main-subtitle-line { font-size: 1.45rem; }
   }
 </style>
