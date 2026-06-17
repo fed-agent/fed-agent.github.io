@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "preview:device": "node tools/preview/serve.mjs",
     "astro": "astro"
   },
   "dependencies": {
