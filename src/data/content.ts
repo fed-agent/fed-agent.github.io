@@ -23,8 +23,8 @@ export const authors = [
   { name: 'Shizhe Diao', url: 'https://shizhediao.github.io/', affil: [5] },
   { name: 'Yiping Lu', url: 'https://2prime.github.io/', affil: [1] },
   { name: 'Tian Li', url: 'https://litian96.github.io/', affil: [4] },
-  { name: 'Manling Li', url: 'https://limanling.github.io/', affil: [1] },
-  { name: 'Dawn Song', url: 'https://dawnsong.io/', affil: [2] },
+  { name: 'Manling Li', url: 'https://limanling.github.io/', affil: [1], equalAdvising: true },
+  { name: 'Dawn Song', url: 'https://dawnsong.io/', affil: [2], equalAdvising: true },
 ];
 
 export const affiliations = [
