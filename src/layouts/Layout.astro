@@ -8,7 +8,7 @@ import Footer from '../components/Footer.astro';
 const { title } = Astro.props;
 const SITE = 'https://fed-agent.github.io';
 const DESC = 'FedAgent (Federated Agent Reinforcement Learning) trains LLM agents across distributed clients without sharing data. Its robustness is asymmetric: robust to task-level heterogeneity, worst-case fragile to environment-level heterogeneity, explained by the Input-Dynamics Asymmetry of task-augmented MDPs.';
-const OG_IMG = `${SITE}/figures/mechanism_overview.png`;
+const OG_IMG = `${SITE}/social-preview.png`;
 const PAPER_TITLE = 'Is Decentralized LLM Agent RL Robust to Heterogeneity? An Asymmetric Tale';
 ---
 <!doctype html>
@@ -21,8 +21,10 @@ const PAPER_TITLE = 'Is Decentralized LLM Agent RL Robust to Heterogeneity? An A
         <meta name="author" content="Canyu Chen, Kangyu Zhu, Zhaorun Chen, Zhanhui Zhou, Shizhe Diao, Yiping Lu, Tian Li, Manling Li, Dawn Song" />
         <meta name="viewport" content="width=device-width" />
         <meta name="theme-color" content="#2a2f6c" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" href="/icon.png" />
-        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="canonical" href="https://fed-agent.github.io/" />
         <meta name="generator" content={Astro.generator} />
         <!-- Open Graph -->
