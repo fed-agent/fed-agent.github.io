@@ -3,8 +3,7 @@
   "short_name": "FedAgent",
   "description": "FedAgent (Federated Agent Reinforcement Learning) trains LLM agents across distributed clients without sharing data.",
   "icons": [
-    { "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ],
   "theme_color": "#2a2f6c",
   "background_color": "#ffffff",
