@@ -55,9 +55,9 @@ export const contributions = [
 
 export const statHighlights = [
   {
-    big: '77.6%',
+    big: '76.6%',
     label: 'FedAgent on ALFWorld (7B)',
-    sub: 'matches 78.6% centralized; far above the 14% to 42% local',
+    sub: 'matches 77.1% centralized; far above the 14% to 42% local',
     tone: 'indigo',
   },
   {
@@ -288,19 +288,19 @@ export const table1 = {
   optimizers: ['GRPO', 'PPO'],
   data: {
     GRPO: [
-      { model: 'Qwen2.5-1.5B-Instruct', alf: { cen: '54.2', cenSd: '0.9', fed: '62.5', fedSd: '2.7' }, web: { cen: '60.4', cenSd: '2.4', fed: '62.0', fedSd: '3.9' } },
-      { model: 'Qwen2.5-3B-Instruct',   alf: { cen: '70.3', cenSd: '4.1', fed: '67.2', fedSd: '3.1' }, web: { cen: '65.1', cenSd: '5.5', fed: '63.0', fedSd: '4.8' } },
-      { model: 'Qwen2.5-7B-Instruct',   alf: { cen: '78.6', cenSd: '5.0', fed: '77.6', fedSd: '2.4' }, web: { cen: '71.4', cenSd: '3.3', fed: '68.8', fedSd: '3.1' } },
-      { model: 'Llama-3.2-3B-Instruct', alf: { cen: '55.2', cenSd: '4.5', fed: '60.9', fedSd: '1.6' }, web: { cen: '56.8', cenSd: '8.6', fed: '57.8', fedSd: '6.2' } },
+      { model: 'Qwen2.5-1.5B-Instruct', alf: { cen: '55.7', cenSd: '1.8', fed: '64.1', fedSd: '0.0' }, web: { cen: '60.4', cenSd: '2.4', fed: '62.0', fedSd: '3.9' } },
+      { model: 'Qwen2.5-3B-Instruct',   alf: { cen: '68.2', cenSd: '2.4', fed: '67.2', fedSd: '1.6' }, web: { cen: '65.1', cenSd: '5.5', fed: '63.0', fedSd: '4.8' } },
+      { model: 'Qwen2.5-7B-Instruct',   alf: { cen: '77.1', cenSd: '3.3', fed: '76.6', fedSd: '3.1' }, web: { cen: '71.4', cenSd: '3.3', fed: '68.8', fedSd: '3.1' } },
+      { model: 'Llama-3.2-3B-Instruct', alf: { cen: '52.1', cenSd: '0.9', fed: '59.4', fedSd: '2.7' }, web: { cen: '56.8', cenSd: '8.6', fed: '57.8', fedSd: '6.2' } },
     ],
     PPO: [
-      { model: 'Qwen2.5-1.5B-Instruct', alf: { cen: '56.8', cenSd: '3.9', fed: '66.7', fedSd: '1.8' }, web: { cen: '54.7', cenSd: '1.6', fed: '59.9', fedSd: '3.3' } },
-      { model: 'Qwen2.5-3B-Instruct',   alf: { cen: '68.8', cenSd: '2.7', fed: '68.2', fedSd: '2.4' }, web: { cen: '61.5', cenSd: '5.5', fed: '58.9', fedSd: '4.8' } },
-      { model: 'Qwen2.5-7B-Instruct',   alf: { cen: '78.1', cenSd: '0.0', fed: '75.5', fedSd: '0.9' }, web: { cen: '69.8', cenSd: '2.4', fed: '71.4', fedSd: '3.9' } },
-      { model: 'Llama-3.2-3B-Instruct', alf: { cen: '52.1', cenSd: '4.8', fed: '58.9', fedSd: '3.3' }, web: { cen: '55.7', cenSd: '7.9', fed: '54.2', fedSd: '7.0' } },
+      { model: 'Qwen2.5-1.5B-Instruct', alf: { cen: '58.9', cenSd: '2.4', fed: '67.2', fedSd: '1.6' }, web: { cen: '54.7', cenSd: '1.6', fed: '59.9', fedSd: '3.3' } },
+      { model: 'Qwen2.5-3B-Instruct',   alf: { cen: '67.2', cenSd: '3.1', fed: '69.3', fedSd: '3.3' }, web: { cen: '61.5', cenSd: '5.5', fed: '58.9', fedSd: '4.8' } },
+      { model: 'Qwen2.5-7B-Instruct',   alf: { cen: '77.6', cenSd: '0.9', fed: '78.6', fedSd: '1.8' }, web: { cen: '69.8', cenSd: '2.4', fed: '71.4', fedSd: '3.9' } },
+      { model: 'Llama-3.2-3B-Instruct', alf: { cen: '53.1', cenSd: '4.1', fed: '59.9', fedSd: '4.8' }, web: { cen: '55.7', cenSd: '7.9', fed: '54.2', fedSd: '7.0' } },
     ],
   },
-  localNote: 'For reference, single-client local training on Qwen2.5-7B reaches only 14.1% to 42.2% on ALFWorld, against 77.6% for FedAgent.',
+  localNote: 'For reference, single-client local training on Qwen2.5-7B reaches only 14.1% to 42.2% on ALFWorld, against 76.6% for FedAgent.',
 };
 
 export const bibtex = `@article{chen2026fedagent,
